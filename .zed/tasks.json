@@ -1,0 +1,15 @@
+[
+  {
+    "label": "Spawn server",
+    "command": "exec cargo run --quiet --release --manifest-path $(dirname $0)/Cargo.toml -- \"$@\"",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "never",
+    "hide": "never",
+    "shell": {
+      "program": "sh"
+    },
+    "show_summary": true,
+    "show_output": true
+  }
+]
