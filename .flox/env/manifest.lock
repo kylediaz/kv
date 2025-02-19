@@ -1,0 +1,143 @@
+{
+  "lockfile-version": 1,
+  "manifest": {
+    "version": 1,
+    "install": {
+      "redis": {
+        "pkg-path": "redis"
+      }
+    },
+    "hook": {},
+    "profile": {},
+    "options": {
+      "systems": [
+        "aarch64-darwin",
+        "aarch64-linux",
+        "x86_64-darwin",
+        "x86_64-linux"
+      ],
+      "allow": {
+        "licenses": []
+      },
+      "semver": {}
+    }
+  },
+  "packages": [
+    {
+      "attr_path": "redis",
+      "broken": false,
+      "derivation": "/nix/store/yd0m2j50cip4dj1fpxhfimciikdri1b5-redis-7.2.7.drv",
+      "description": "Open source, advanced key-value store",
+      "install_id": "redis",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
+      "name": "redis-7.2.7",
+      "pname": "redis",
+      "rev": "d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
+      "rev_count": 754461,
+      "rev_date": "2025-02-16T20:11:36Z",
+      "scrape_date": "2025-02-18T01:16:02Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "7.2.7",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/ldz39wyk0z1f9g92k1dyvgpnpdz4cb86-redis-7.2.7"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "redis",
+      "broken": false,
+      "derivation": "/nix/store/gc4h4a74l8x63wkbz645z7gfqkl8ysn5-redis-7.2.7.drv",
+      "description": "Open source, advanced key-value store",
+      "install_id": "redis",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
+      "name": "redis-7.2.7",
+      "pname": "redis",
+      "rev": "d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
+      "rev_count": 754461,
+      "rev_date": "2025-02-16T20:11:36Z",
+      "scrape_date": "2025-02-18T01:16:02Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "7.2.7",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/x7hwq396f84ffq8dmpqmh8y9vxbwcn73-redis-7.2.7"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "redis",
+      "broken": false,
+      "derivation": "/nix/store/3plk3r2h8p3y4l79b75hwhs88v0wnzzx-redis-7.2.7.drv",
+      "description": "Open source, advanced key-value store",
+      "install_id": "redis",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
+      "name": "redis-7.2.7",
+      "pname": "redis",
+      "rev": "d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
+      "rev_count": 754461,
+      "rev_date": "2025-02-16T20:11:36Z",
+      "scrape_date": "2025-02-18T01:16:02Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "7.2.7",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/2zn0zzl4s4ajlwf5awz2gm5xvyicadlz-redis-7.2.7"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "redis",
+      "broken": false,
+      "derivation": "/nix/store/p9bgxl5ahsa3i9lj6capfz79nm10qq43-redis-7.2.7.drv",
+      "description": "Open source, advanced key-value store",
+      "install_id": "redis",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
+      "name": "redis-7.2.7",
+      "pname": "redis",
+      "rev": "d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
+      "rev_count": 754461,
+      "rev_date": "2025-02-16T20:11:36Z",
+      "scrape_date": "2025-02-18T01:16:02Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "7.2.7",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/hpxb6r038ywfs7w733iq20fjn1y6669q-redis-7.2.7"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    }
+  ]
+}
