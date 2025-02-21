@@ -3,6 +3,12 @@
   "manifest": {
     "version": 1,
     "install": {
+      "pytest": {
+        "pkg-path": "python310Packages.pytest"
+      },
+      "python3": {
+        "pkg-path": "python3"
+      },
       "redis": {
         "pkg-path": "redis"
       }
@@ -24,29 +30,280 @@
   },
   "packages": [
     {
-      "attr_path": "redis",
+      "attr_path": "python310Packages.pytest",
       "broken": false,
-      "derivation": "/nix/store/yd0m2j50cip4dj1fpxhfimciikdri1b5-redis-7.2.7.drv",
-      "description": "Open source, advanced key-value store",
-      "install_id": "redis",
-      "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
-      "name": "redis-7.2.7",
-      "pname": "redis",
-      "rev": "d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
-      "rev_count": 754461,
-      "rev_date": "2025-02-16T20:11:36Z",
-      "scrape_date": "2025-02-18T01:16:02Z",
+      "derivation": "/nix/store/iknz7dyhbr57dv9ghs30p2nlvi88vwnz-python3.10-pytest-7.1.3.drv",
+      "description": "Framework for writing tests",
+      "install_id": "pytest",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "python3.10-pytest-7.1.3",
+      "pname": "pytest",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
-      "version": "7.2.7",
+      "version": "7.1.3",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/ldz39wyk0z1f9g92k1dyvgpnpdz4cb86-redis-7.2.7"
+        "dist": "/nix/store/93c8rfpzjaj8zvsw5r0inv187bf5lsc4-python3.10-pytest-7.1.3-dist",
+        "out": "/nix/store/ddljpgd2vip0vaivz5q00hcq9gq2rbw5-python3.10-pytest-7.1.3",
+        "testout": "/nix/store/kbwkgsnn5vms7mrppc6lv7k8njilhfm0-python3.10-pytest-7.1.3-testout"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python310Packages.pytest",
+      "broken": false,
+      "derivation": "/nix/store/9i3s2w92xm233sf9hlb777kc40qa1z62-python3.10-pytest-7.1.3.drv",
+      "description": "Framework for writing tests",
+      "install_id": "pytest",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "python3.10-pytest-7.1.3",
+      "pname": "pytest",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "7.1.3",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/sd7lg7v5hniaq9r7m43qsqwj6ds932s2-python3.10-pytest-7.1.3-dist",
+        "out": "/nix/store/ycyd9qw2348qy1br0l8qw1yg7mxdd40d-python3.10-pytest-7.1.3",
+        "testout": "/nix/store/93k1ybp102fpxf87m2zqfkpwpjmqj19r-python3.10-pytest-7.1.3-testout"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python310Packages.pytest",
+      "broken": false,
+      "derivation": "/nix/store/gig9kq6l9s5c5hk3kw14cdbzdz8s5ic6-python3.10-pytest-7.1.3.drv",
+      "description": "Framework for writing tests",
+      "install_id": "pytest",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "python3.10-pytest-7.1.3",
+      "pname": "pytest",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "7.1.3",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/h9s5g8h96cc7fg1cnfmcqrz4697nvm76-python3.10-pytest-7.1.3-dist",
+        "out": "/nix/store/bwqlrnsa05mad0lgvccwyr8r98i949h2-python3.10-pytest-7.1.3",
+        "testout": "/nix/store/ryqgk39yg3jawkpnb4lybry0vcp9lnvd-python3.10-pytest-7.1.3-testout"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python310Packages.pytest",
+      "broken": false,
+      "derivation": "/nix/store/clj24afjq4x8ca6a3l8ymzcawvy0nl9q-python3.10-pytest-7.1.3.drv",
+      "description": "Framework for writing tests",
+      "install_id": "pytest",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "python3.10-pytest-7.1.3",
+      "pname": "pytest",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "7.1.3",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/923q8wjmxas7y0ah4rgvi68i3czpwx06-python3.10-pytest-7.1.3-dist",
+        "out": "/nix/store/96mm3zbb0f3gdxd2fv7ml4xsskxw90q8-python3.10-pytest-7.1.3",
+        "testout": "/nix/store/2r9qr23209izip1xrqq268lrjkn6cqg8-python3.10-pytest-7.1.3-testout"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python3",
+      "broken": false,
+      "derivation": "/nix/store/fnlv0bac9bq8iaqkvr31ryrpgd5p7a2s-python3-3.10.9.drv",
+      "description": "A high-level dynamically-typed programming language",
+      "install_id": "python3",
+      "license": "Python-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "python3-3.10.9",
+      "pname": "python3",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.10.9",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/3sixc33xj6wbjd3zqd5y1m1cbfhj2j2s-python3-3.10.9"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python3",
+      "broken": false,
+      "derivation": "/nix/store/n7q3kl006lvjvqgfnhvyvicf5sl5mrnl-python3-3.10.9.drv",
+      "description": "A high-level dynamically-typed programming language",
+      "install_id": "python3",
+      "license": "Python-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "python3-3.10.9",
+      "pname": "python3",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.10.9",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/ji250dahm8nc0lpgkc2m9i04p7aa7bma-python3-3.10.9-debug",
+        "out": "/nix/store/ar76b3831ydkmfhf0r9v3wbma5i61iz2-python3-3.10.9"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python3",
+      "broken": false,
+      "derivation": "/nix/store/55brjsrk108bvcb5yma4yhqmcyvn4jh2-python3-3.10.9.drv",
+      "description": "A high-level dynamically-typed programming language",
+      "install_id": "python3",
+      "license": "Python-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "python3-3.10.9",
+      "pname": "python3",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.10.9",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/fbll01zhyfffmshwrrzphmbscmnimn3f-python3-3.10.9"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python3",
+      "broken": false,
+      "derivation": "/nix/store/vgpv5w9lxnrxkdvb4hx1llxp811fd8pk-python3-3.10.9.drv",
+      "description": "A high-level dynamically-typed programming language",
+      "install_id": "python3",
+      "license": "Python-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "python3-3.10.9",
+      "pname": "python3",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.10.9",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/ncal75crk6rmzdzic2g560pza7hi0740-python3-3.10.9-debug",
+        "out": "/nix/store/al6g1zbk8li6p8mcyp0h60d08jaahf8c-python3-3.10.9"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "redis",
+      "broken": false,
+      "derivation": "/nix/store/v6bszvi7yb7mqv2viw9h9x1jn9hz85rj-redis-7.0.5.drv",
+      "description": "An open source, advanced key-value store",
+      "install_id": "redis",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "redis-7.0.5",
+      "pname": "redis",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "7.0.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/ghl751ylckbj6zwzdi1yaqbslf8vhcxf-redis-7.0.5"
       },
       "system": "aarch64-darwin",
       "group": "toplevel",
@@ -55,27 +312,28 @@
     {
       "attr_path": "redis",
       "broken": false,
-      "derivation": "/nix/store/gc4h4a74l8x63wkbz645z7gfqkl8ysn5-redis-7.2.7.drv",
-      "description": "Open source, advanced key-value store",
+      "derivation": "/nix/store/hr5vqy5l6gk4k1hm1fhnx6hhxzdzy8aq-redis-7.0.5.drv",
+      "description": "An open source, advanced key-value store",
       "install_id": "redis",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
-      "name": "redis-7.2.7",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "redis-7.0.5",
       "pname": "redis",
-      "rev": "d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
-      "rev_count": 754461,
-      "rev_date": "2025-02-16T20:11:36Z",
-      "scrape_date": "2025-02-18T01:16:02Z",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
-      "version": "7.2.7",
+      "version": "7.0.5",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/x7hwq396f84ffq8dmpqmh8y9vxbwcn73-redis-7.2.7"
+        "out": "/nix/store/lj10i1v8c9ln7r3wmwffbwbn012w2h9z-redis-7.0.5"
       },
       "system": "aarch64-linux",
       "group": "toplevel",
@@ -84,27 +342,28 @@
     {
       "attr_path": "redis",
       "broken": false,
-      "derivation": "/nix/store/3plk3r2h8p3y4l79b75hwhs88v0wnzzx-redis-7.2.7.drv",
-      "description": "Open source, advanced key-value store",
+      "derivation": "/nix/store/3vswri884802rag1gdb3shcgqzd75amh-redis-7.0.5.drv",
+      "description": "An open source, advanced key-value store",
       "install_id": "redis",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
-      "name": "redis-7.2.7",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "redis-7.0.5",
       "pname": "redis",
-      "rev": "d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
-      "rev_count": 754461,
-      "rev_date": "2025-02-16T20:11:36Z",
-      "scrape_date": "2025-02-18T01:16:02Z",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
-      "version": "7.2.7",
+      "version": "7.0.5",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/2zn0zzl4s4ajlwf5awz2gm5xvyicadlz-redis-7.2.7"
+        "out": "/nix/store/y1xkypda1whn2npf28vq5n56igcfz1yx-redis-7.0.5"
       },
       "system": "x86_64-darwin",
       "group": "toplevel",
@@ -113,27 +372,28 @@
     {
       "attr_path": "redis",
       "broken": false,
-      "derivation": "/nix/store/p9bgxl5ahsa3i9lj6capfz79nm10qq43-redis-7.2.7.drv",
-      "description": "Open source, advanced key-value store",
+      "derivation": "/nix/store/v3g35acjh2jn7gmgf9ry5ahi1dgpg25q-redis-7.0.5.drv",
+      "description": "An open source, advanced key-value store",
       "install_id": "redis",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
-      "name": "redis-7.2.7",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "name": "redis-7.0.5",
       "pname": "redis",
-      "rev": "d74a2335ac9c133d6bbec9fc98d91a77f1604c1f",
-      "rev_count": 754461,
-      "rev_date": "2025-02-16T20:11:36Z",
-      "scrape_date": "2025-02-18T01:16:02Z",
+      "rev": "0fc9fca9c8d43edd79d33fea0dd8409d7c4580f4",
+      "rev_count": 439146,
+      "rev_date": "2023-01-02T00:06:23Z",
+      "scrape_date": "2024-08-16T02:13:46Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
-      "version": "7.2.7",
+      "version": "7.0.5",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/hpxb6r038ywfs7w733iq20fjn1y6669q-redis-7.2.7"
+        "out": "/nix/store/7qybz5ybywr26lm6s8gb1dc8fv4cq4f7-redis-7.0.5"
       },
       "system": "x86_64-linux",
       "group": "toplevel",

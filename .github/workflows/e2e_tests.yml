@@ -1,0 +1,20 @@
+name: "E2E Tests"
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+
+      - name: "Install Flox"
+        uses: "flox/install-flox-action@v2"
+
+      - name: "Build"
+        uses: "flox/activate-action@v1"
+        with:
+          command: pytest test/e2e/commands.py
