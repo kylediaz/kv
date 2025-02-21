@@ -24,7 +24,7 @@ impl Display for RESP {
                 }
                 Ok(())
             }
-            Self::BulkString(s) => write!(f, "${}\r\n{}", s.len(), s),
+            Self::BulkString(s) => write!(f, "${}\r\n{}\r\n", s.len(), s),
             Self::Null => write!(f, "$-1\r\n"),
             Self::SimpleString(s) => write!(f, "+{}\r\n", s),
         }
