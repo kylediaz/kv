@@ -99,7 +99,7 @@ mod tests {
 
     #[test]
     fn test_process_request_echo() {
-        let command = vec!["echoH".to_string(), "Hello".to_string()];
+        let command = vec!["echo".to_string(), "Hello".to_string()];
         let storage: Storage = Storage::new();
         let response = storage.command_echo(&command).unwrap();
         assert_eq!(response, RESP::SimpleString("Hello".to_string()));

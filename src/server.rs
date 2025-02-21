@@ -1,5 +1,7 @@
 use std::fmt;
+use std::sync::{Arc, Mutex};
 
+use crate::storage::Storage;
 use crate::RESP;
 
 #[derive(Debug, PartialEq)]
@@ -17,7 +19,7 @@ impl fmt::Display for ServerError {
 
 pub type ServerResult<T> = Result<T, ServerError>;
 
-pub fn process_request(request: RESP) -> ServerResult<RESP> {
+pub fn process_request(request: RESP, storage: Arc<Mutex<Storage>>) -> ServerResult<RESP> {
     let elements = match request {
         RESP::Array(v) => v,
         _ => {
@@ -34,9 +36,9 @@ pub fn process_request(request: RESP) -> ServerResult<RESP> {
         }
     }
 
-    match command[0].to_lowercase().as_str() {
-        "ping" => Ok(RESP::SimpleString("PONG".to_string())),
-        "echo" => Ok(RESP::BulkString(command[1].clone())),
-        _ => Err(ServerError::CommandError),
-    }
+    let result = storage.lock().unwrap().process_command(&command);
+    return match result {
+        Ok(resp) => Ok(resp),
+        Err(_) => Err(ServerError::CommandError),
+    };
 }
