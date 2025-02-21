@@ -14,7 +14,13 @@ jobs:
       - name: "Install Flox"
         uses: "flox/install-flox-action@v2"
 
-      - name: "Build"
+      - name: Build
+        run: cargo build
+
+      - name: Spawn server
+        run: cargo run &
+
+      - name: "Run E2E Tests"
         uses: "flox/activate-action@v1"
         with:
           command: pytest test/e2e/commands.py
