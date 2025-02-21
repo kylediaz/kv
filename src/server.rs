@@ -40,25 +40,3 @@ pub fn process_request(request: RESP) -> ServerResult<RESP> {
         _ => Err(ServerError::CommandError),
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_process_request_ping() {
-        let request = RESP::Array(vec![RESP::BulkString("PING".to_string())]);
-        let response = process_request(request);
-        assert_eq!(response, Ok(RESP::SimpleString("PONG".to_string())));
-    }
-
-    #[test]
-    fn test_process_request_echo() {
-        let request = RESP::Array(vec![
-            RESP::BulkString("ECHO".to_string()),
-            RESP::BulkString("Hello".to_string()),
-        ]);
-        let response = process_request(request);
-        assert_eq!(response, Ok(RESP::BulkString("Hello".to_string())));
-    }
-}

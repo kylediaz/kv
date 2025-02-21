@@ -6,6 +6,7 @@ use tokio::{
 
 mod resp;
 mod server;
+mod storage;
 
 use resp::{bytes_to_resp, RESP};
 
