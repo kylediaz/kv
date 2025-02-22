@@ -3,7 +3,7 @@ mod util;
 
 use std::fmt::{self, Display};
 
-use crate::resp::result::{RESPError, RESPLength, RESPResult};
+use crate::resp::result::{RESPError, RESPResult};
 use crate::resp::util::*;
 
 #[derive(Debug, PartialEq)]
@@ -37,7 +37,24 @@ pub fn bytes_to_resp(buffer: &[u8], index: &mut usize) -> RESPResult<RESP> {
             let result: RESP = parse_func(buffer, index)?;
             Ok(result)
         }
-        None => Err(RESPError::Unknown),
+        None => {
+            // If the command doesn't start with a RESP type, then the command
+            // isn't using the Redis serialization protocol. It should be interpreted
+            // as "plain text"
+            // *2\r\n$4\r\nECHO\r\n$4\r\nHEY!\r\n <-- RESP
+            // ECHO HEY!\r\n <-- plain text
+            if buffer.len() < 2
+                || buffer[buffer.len() - 2] != b'\r'
+                || buffer[buffer.len() - 1] != b'\n'
+            {
+                return Err(RESPError::Unknown);
+            }
+            let result = String::from_utf8_lossy(&buffer[..buffer.len() - 2])
+                .split(" ")
+                .map(|s| RESP::BulkString(s.to_string()))
+                .collect();
+            return Ok(RESP::Array(result));
+        }
     }
 }
 
