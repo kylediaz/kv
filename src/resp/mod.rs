@@ -35,29 +35,17 @@ pub fn bytes_to_resp(buffer: &[u8], index: &mut usize) -> RESPResult<RESP> {
     if buffer.len() == 0 {
         return Err(RESPError::Unknown);
     }
-    match parser_router(buffer, index) {
-        Some(parse_func) => {
-            let result: RESP = parse_func(buffer, index)?;
-            Ok(result)
-        }
-        None => {
-            // If the command doesn't start with a RESP type, then the command
-            // isn't using the Redis serialization protocol. It should be interpreted
-            // as "plain text"
-            // *2\r\n$4\r\nECHO\r\n$4\r\nHEY!\r\n <-- RESP
-            // ECHO HEY!\r\n <-- plain text
-            if buffer.len() < 2
-                || buffer[buffer.len() - 2] != b'\r'
-                || buffer[buffer.len() - 1] != b'\n'
-            {
-                return Err(RESPError::Unknown);
-            }
-            let result = String::from_utf8_lossy(&buffer[..buffer.len() - 2])
-                .split(" ")
-                .map(|s| RESP::BulkString(s.to_string()))
-                .collect();
-            return Ok(RESP::Array(result));
-        }
+    if buffer[0] == b'*' {
+        // bytes must be a RESP protocol array
+        return parse_array(buffer, index);
+    } else {
+        // If the command doesn't start with a RESP type, then the command
+        // isn't using the Redis serialization protocol. It should be interpreted
+        // as "plain text"
+        // *2\r\n$4\r\nECHO\r\n$4\r\nHEY!\r\n <-- RESP
+        // ECHO HEY!\r\n <-- plain text
+        // This is necessary for compatibility with some Redis tools
+        return try_parse_preresp(buffer, index);
     }
 }
 
@@ -115,6 +103,21 @@ fn parse_simple_string(buffer: &[u8], index: &mut usize) -> RESPResult<RESP> {
     resp_remove_type('+', buffer, index)?;
     let line: String = binary_extract_line_as_string(buffer, index)?;
     Ok(RESP::SimpleString(line))
+}
+
+fn try_parse_preresp(buffer: &[u8], _index: &mut usize) -> RESPResult<RESP> {
+    if buffer.len() < 3
+        || buffer[buffer.len() - 2] != b'\r'
+        || buffer[buffer.len() - 1] != b'\n'
+        || !buffer[0].is_ascii_alphabetic()
+    {
+        return Err(RESPError::Unknown);
+    }
+    let result = String::from_utf8_lossy(&buffer[..buffer.len() - 2])
+        .split(" ")
+        .map(|s| RESP::BulkString(s.to_string()))
+        .collect();
+    return Ok(RESP::Array(result));
 }
 
 #[cfg(test)]
@@ -199,13 +202,6 @@ mod test {
         "*2\r\n+hello\r\n",
         RESPError::OutOfBounds(12),
         12
-    );
-
-    parse_test!(
-        test_parse_simple_string,
-        "+OK\r\n",
-        RESP::SimpleString(String::from("OK")),
-        5
     );
 
     parse_test_expect_error!(test_bytes_to_resp_unknown, "?OK\r\n", RESPError::Unknown, 0);
