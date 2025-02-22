@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use std::env;
 
+mod command;
 mod config;
 mod resp;
 mod server;

@@ -22,20 +22,10 @@ impl Storage {
 
     pub fn process_command(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
         match command[0].to_lowercase().as_str() {
-            "ping" => self.command_ping(&command),
-            "echo" => self.command_echo(&command),
             "get" => self.command_get(&command),
             "set" => self.command_set(&command),
             _ => Err(StorageError::CommandNotAvailable(command[0].clone())),
         }
-    }
-
-    fn command_ping(&self, _command: &Vec<String>) -> StorageResult<RESP> {
-        Ok(RESP::SimpleString("PONG".to_string()))
-    }
-
-    fn command_echo(&self, command: &Vec<String>) -> StorageResult<RESP> {
-        Ok(RESP::SimpleString(command[1].clone()))
     }
 
     fn command_set(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
@@ -79,30 +69,6 @@ mod tests {
     fn test_create_new() {
         let storage: Storage = Storage::new();
         assert_eq!(storage.store.len(), 0);
-    }
-
-    #[test]
-    fn test_process_request_ping() {
-        let command = vec!["ping".to_string()];
-        let storage: Storage = Storage::new();
-        let response = storage.command_ping(&command).unwrap();
-        assert_eq!(response, RESP::SimpleString("PONG".to_string()));
-    }
-
-    #[test]
-    fn test_process_request_ping_uppercase() {
-        let command = vec!["PING".to_string()];
-        let storage: Storage = Storage::new();
-        let response = storage.command_ping(&command).unwrap();
-        assert_eq!(response, RESP::SimpleString("PONG".to_string()));
-    }
-
-    #[test]
-    fn test_process_request_echo() {
-        let command = vec!["echo".to_string(), "Hello".to_string()];
-        let storage: Storage = Storage::new();
-        let response = storage.command_echo(&command).unwrap();
-        assert_eq!(response, RESP::SimpleString("Hello".to_string()));
     }
 
     #[test]

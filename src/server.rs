@@ -9,6 +9,8 @@ use tokio::{
 use crate::resp::{bytes_to_resp, RESP};
 use crate::storage::Storage;
 
+use super::command::Command;
+
 #[derive(Debug, PartialEq)]
 pub enum ServerError {
     CommandError,
@@ -24,18 +26,32 @@ impl fmt::Display for ServerError {
 
 pub type ServerResult<T> = Result<T, ServerError>;
 
+pub struct Server {
+    config: HashMap<String, String>,
+    storage: Mutex<Storage>,
+}
+
+impl Server {
+    pub fn new(config: HashMap<String, String>, storage: Mutex<Storage>) -> Self {
+        Server { config, storage }
+    }
+}
+
 pub async fn start(config: HashMap<String, String>) -> std::io::Result<()> {
     let default_port = "6379".to_string();
     let port = config.get("port").unwrap_or(&default_port);
 
     let listener = TcpListener::bind(format!("127.0.0.1:{}", port)).await?;
     println!("Server initialized");
-    let storage = Arc::new(Mutex::new(Storage::new()));
+    let storage = Mutex::new(Storage::new());
+
+    let server: Arc<Server> = Arc::new(Server::new(config, storage));
+
+    println!("Ready to accept connections");
     loop {
-        println!("Ready to accept connections");
         match listener.accept().await {
             Ok((stream, _)) => {
-                tokio::spawn(handle_connection(stream, storage.clone()));
+                tokio::spawn(handle_connection(stream, server.clone()));
             }
             Err(e) => {
                 println!("error: {}", e);
@@ -45,20 +61,21 @@ pub async fn start(config: HashMap<String, String>) -> std::io::Result<()> {
     }
 }
 
-async fn handle_connection(mut stream: TcpStream, storage: Arc<Mutex<Storage>>) {
+async fn handle_connection(mut stream: TcpStream, server: Arc<Server>) {
     let mut buffer = [0; 1024];
     loop {
         match stream.read(&mut buffer).await {
             Ok(size) => {
                 let mut index: usize = 0;
-                let request = match bytes_to_resp(&buffer[..size].to_vec(), &mut index) {
+                let request: RESP = match bytes_to_resp(&buffer[..size].to_vec(), &mut index) {
                     Ok(v) => v,
                     Err(e) => {
                         eprintln!("error parsing request: {}", e);
                         return;
                     }
                 };
-                let response: RESP = match process_request(request, storage.clone()) {
+                println!("{}", request);
+                let response: RESP = match process_request(request, server.clone()) {
                     Ok(v) => v,
                     Err(e) => {
                         eprintln!("error processing request: {}", e);
@@ -82,7 +99,7 @@ async fn handle_connection(mut stream: TcpStream, storage: Arc<Mutex<Storage>>) 
     }
 }
 
-pub fn process_request(request: RESP, storage: Arc<Mutex<Storage>>) -> ServerResult<RESP> {
+pub fn process_request(request: RESP, server: Arc<Server>) -> ServerResult<RESP> {
     let elements = match request {
         RESP::Array(v) => v,
         _ => {
@@ -99,9 +116,35 @@ pub fn process_request(request: RESP, storage: Arc<Mutex<Storage>>) -> ServerRes
         }
     }
 
-    let result = storage.lock().unwrap().process_command(&command);
-    return match result {
-        Ok(resp) => Ok(resp),
-        Err(_) => Err(ServerError::CommandError),
+    let command_type = Command::from(&command);
+
+    if command_type.is_none() {
+        return Err(ServerError::CommandError);
+    }
+    let command_type = command_type.unwrap();
+
+    return match command_type {
+        Command::Ping => {
+            if command.len() == 1 {
+                Ok(RESP::SimpleString(command[1].to_string()))
+            } else {
+                Ok(RESP::SimpleString("PONG".to_string()))
+            }
+        }
+        Command::Echo => {
+            if command.len() == 2 {
+                Ok(RESP::SimpleString(command[1].to_string()))
+            } else {
+                Err(ServerError::CommandError)
+            }
+        }
+        _ => {
+            // Execute command on server
+            let result = server.storage.lock().unwrap().process_command(&command);
+            return match result {
+                Ok(resp) => Ok(resp),
+                Err(_) => Err(ServerError::CommandError),
+            };
+        }
     };
 }
