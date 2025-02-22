@@ -27,13 +27,30 @@ impl fmt::Display for ServerError {
 pub type ServerResult<T> = Result<T, ServerError>;
 
 pub struct Server {
-    config: HashMap<String, String>,
+    config: Mutex<HashMap<String, String>>,
     storage: Mutex<Storage>,
 }
 
 impl Server {
     pub fn new(config: HashMap<String, String>, storage: Mutex<Storage>) -> Self {
-        Server { config, storage }
+        Server {
+            config: Mutex::new(config),
+            storage,
+        }
+    }
+
+    pub fn get_config_value(&self, key: &str) -> String {
+        let default = "".to_string();
+        self.config
+            .lock()
+            .unwrap()
+            .get(key)
+            .cloned()
+            .unwrap_or(default)
+    }
+
+    pub fn set_config_value(&self, key: String, value: String) {
+        self.config.lock().unwrap().insert(key.to_string(), value);
     }
 }
 
@@ -74,7 +91,6 @@ async fn handle_connection(mut stream: TcpStream, server: Arc<Server>) {
                         return;
                     }
                 };
-                println!("{}", request);
                 let response: RESP = match process_request(request, server.clone()) {
                     Ok(v) => v,
                     Err(e) => {
@@ -125,7 +141,7 @@ pub fn process_request(request: RESP, server: Arc<Server>) -> ServerResult<RESP>
 
     return match command_type {
         Command::Ping => {
-            if command.len() == 1 {
+            if command.len() == 2 {
                 Ok(RESP::SimpleString(command[1].to_string()))
             } else {
                 Ok(RESP::SimpleString("PONG".to_string()))
@@ -138,6 +154,36 @@ pub fn process_request(request: RESP, server: Arc<Server>) -> ServerResult<RESP>
                 Err(ServerError::CommandError)
             }
         }
+        Command::Command => {
+            if command[1].eq_ignore_ascii_case("DOCS") {
+                Ok(RESP::Array(Vec::new()))
+            } else {
+                Err(ServerError::CommandError)
+            }
+        }
+        Command::Config => {
+            if command[1].eq_ignore_ascii_case("GET") {
+                if command.len() == 3 {
+                    let key = command[2].to_string();
+                    let value = server.get_config_value(&key);
+                    Ok(RESP::SimpleString(value))
+                } else {
+                    Err(ServerError::CommandError)
+                }
+            } else if command[1].eq_ignore_ascii_case("SET") {
+                if command.len() == 4 {
+                    let key = command[2].to_string();
+                    let value = command[3].to_string();
+                    server.set_config_value(key, value);
+                    Ok(RESP::SimpleString(command[3].to_string()))
+                } else {
+                    Err(ServerError::CommandError)
+                }
+            } else {
+                Err(ServerError::CommandError)
+            }
+        }
+        Command::Quit => Ok(RESP::SimpleString("OK".to_string())),
         _ => {
             // Execute command on server
             let result = server.storage.lock().unwrap().process_command(&command);

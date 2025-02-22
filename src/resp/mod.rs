@@ -32,6 +32,9 @@ impl Display for RESP {
 }
 
 pub fn bytes_to_resp(buffer: &[u8], index: &mut usize) -> RESPResult<RESP> {
+    if buffer.len() == 0 {
+        return Err(RESPError::Unknown);
+    }
     match parser_router(buffer, index) {
         Some(parse_func) => {
             let result: RESP = parse_func(buffer, index)?;
