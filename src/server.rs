@@ -149,7 +149,7 @@ pub fn process_request(request: RESP, server: Arc<Server>) -> ServerResult<RESP>
         }
         Command::Echo => {
             if command.len() == 2 {
-                Ok(RESP::SimpleString(command[1].to_string()))
+                Ok(RESP::BulkString(command[1].to_string()))
             } else {
                 Err(ServerError::CommandError)
             }

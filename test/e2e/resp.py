@@ -24,14 +24,14 @@ def test_echo():
         client_socket.connect(SERVER)
         for _ in range(10):
             message = b'*2\r\n$4\r\nECHO\r\n$5\r\nvalue\r\n'
-            send_response_template(client_socket, message, b'+value\r\n')
+            send_response_template(client_socket, message, b'$5\r\nvalue\r\n')
 
 def test_multiple_echoes():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect(SERVER)
         for i in range(20):
             message = f'*2\r\n$4\r\nECHO\r\n${5 + len(str(i))}\r\nvalue{i}\r\n'.encode()
-            expected_response = f'+value{i}\r\n'.encode()
+            expected_response = f'${5+len(str(i))}\r\nvalue{i}\r\n'.encode()
             send_response_template(client_socket, message, expected_response)
 
 def test_get_nil():
