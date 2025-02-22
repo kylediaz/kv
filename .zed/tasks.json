@@ -21,7 +21,7 @@
   },
   {
     "label": "End-to-end tests",
-    "command": "exec flox activate -- pytest test/e2e/commands.py",
+    "command": "exec flox activate -- pytest test/e2e/*.py",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "always",
