@@ -72,6 +72,15 @@ def test_multiple_set_and_get():
             expected_response = f'$6\r\nvalue{i}\r\n'.encode()
             send_response_template(client_socket, message, expected_response)
 
+def test_del():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+        client_socket.connect(SERVER)
+
+        message = b'*2\r\n$3\r\nDEL\r\n$13\r\ntest-incr-key\r\n'
+        client_socket.sendall(message)
+        response = client_socket.recv(1024)
+        assert response == b':1\r\n' or response == b':0\r\n'
+
 def test_incr_new_key():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect(SERVER)

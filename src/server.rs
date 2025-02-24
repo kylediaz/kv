@@ -89,7 +89,6 @@ async fn handle_connection(mut stream: TcpStream, server: Arc<Server>) {
     loop {
         match stream.read(&mut buffer).await {
             Ok(0) => {
-                println!("connection closed");
                 break;
             }
             Ok(size) => {

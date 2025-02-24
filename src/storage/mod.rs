@@ -36,6 +36,7 @@ impl Storage {
             "mget" => self.command_mget(&command),
             "set" => self.command_set(&command),
             "mset" => self.command_mset(&command),
+            "del" => self.command_del(&command),
             "incr" => self.command_incr(&command),
             _ => Err(StorageError::CommandNotAvailable(command[0].clone())),
         }
@@ -123,6 +124,27 @@ impl Storage {
             }
         }
         Ok(RESP::Array(values))
+    }
+
+    fn command_del(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
+        if command.len() < 2 {
+            let command = command.join(" ");
+            return Err(StorageError::CommandSyntaxError(
+                command,
+                "Expected at least one argument".to_string(),
+            ));
+        }
+        let mut count = 0;
+        for i in 1..command.len() {
+            let key = command.get(i).unwrap();
+            match self.store.remove(key) {
+                Some(_) => {
+                    count += 1;
+                }
+                None => continue,
+            };
+        }
+        Ok(RESP::Integer(count))
     }
 
     fn command_incr(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
