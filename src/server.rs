@@ -13,13 +13,19 @@ use super::command::Command;
 
 #[derive(Debug, PartialEq)]
 pub enum ServerError {
+    UnknownCommand(String),
     CommandError,
+    IncorrectFormat(String),
 }
 
 impl fmt::Display for ServerError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            ServerError::UnknownCommand(s) => write!(f, "Unknown command: {}", s),
             ServerError::CommandError => write!(f, "Command error"),
+            ServerError::IncorrectFormat(format) => {
+                write!(f, "Incorrect serialization format for command: {}", format)
+            }
         }
     }
 }
@@ -87,14 +93,16 @@ async fn handle_connection(mut stream: TcpStream, server: Arc<Server>) {
                 let request: RESP = match bytes_to_resp(&buffer[..size].to_vec(), &mut index) {
                     Ok(v) => v,
                     Err(e) => {
-                        eprintln!("error parsing request: {}", e);
+                        let request_str = buffer_to_debug_string(&buffer[..size]);
+                        eprintln!("error parsing request {}: {}", request_str, e);
                         return;
                     }
                 };
                 let response: RESP = match process_request(request, server.clone()) {
                     Ok(v) => v,
                     Err(e) => {
-                        eprintln!("error processing request: {}", e);
+                        let request_str = buffer_to_debug_string(&buffer[..size]);
+                        eprintln!("error processing request {}: {}", request_str, e);
                         return;
                     }
                 };
@@ -115,11 +123,19 @@ async fn handle_connection(mut stream: TcpStream, server: Arc<Server>) {
     }
 }
 
+fn buffer_to_debug_string(buffer: &[u8]) -> String {
+    String::from_utf8_lossy(buffer)
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+}
+
 pub fn process_request(request: RESP, server: Arc<Server>) -> ServerResult<RESP> {
     let elements = match request {
         RESP::Array(v) => v,
         _ => {
-            return Err(ServerError::CommandError);
+            return Err(ServerError::IncorrectFormat(
+                "Expected first element to be an Array".to_string(),
+            ));
         }
     };
     let mut command = Vec::new();
@@ -127,7 +143,9 @@ pub fn process_request(request: RESP, server: Arc<Server>) -> ServerResult<RESP>
         match elem {
             RESP::BulkString(s) => command.push(s.clone()),
             _ => {
-                return Err(ServerError::CommandError);
+                return Err(ServerError::IncorrectFormat(
+                    "Expected first element to be an Array of BulkString".to_string(),
+                ));
             }
         }
     }
@@ -135,7 +153,9 @@ pub fn process_request(request: RESP, server: Arc<Server>) -> ServerResult<RESP>
     let command_type = Command::from(&command);
 
     if command_type.is_none() {
-        return Err(ServerError::CommandError);
+        let command = command.join(" ");
+        let err = ServerError::UnknownCommand(command);
+        return Err(err);
     }
     let command_type = command_type.unwrap();
 
