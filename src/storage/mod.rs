@@ -8,12 +8,14 @@ use crate::resp::RESP;
 #[derive(Debug, PartialEq, Clone)]
 pub enum StorageValue {
     String(String),
+    Integer(i64),
 }
 
 impl From<StorageValue> for RESP {
     fn from(value: StorageValue) -> RESP {
         match value {
             StorageValue::String(s) => RESP::BulkString(s),
+            StorageValue::Integer(i) => RESP::Integer(i),
         }
     }
 }
@@ -34,13 +36,18 @@ impl Storage {
             "mget" => self.command_mget(&command),
             "set" => self.command_set(&command),
             "mset" => self.command_mset(&command),
+            "incr" => self.command_incr(&command),
             _ => Err(StorageError::CommandNotAvailable(command[0].clone())),
         }
     }
 
     fn command_set(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
         if command.len() != 3 {
-            return Err(StorageError::CommandSyntaxError(command.join(" ")));
+            let command = command.join(" ");
+            return Err(StorageError::CommandSyntaxError(
+                command,
+                "Expected 3 arguments".to_string(),
+            ));
         }
         let _ = self.set(command[1].clone(), command[2].clone());
         Ok(RESP::SimpleString(String::from("OK")))
@@ -52,8 +59,18 @@ impl Storage {
     }
 
     fn command_mset(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
+        if command.len() == 1 {
+            return Err(StorageError::CommandSyntaxError(
+                command.join(" "),
+                "Expected arguments".to_string(),
+            ));
+        }
         if command.len() % 2 != 1 {
-            return Err(StorageError::CommandSyntaxError(command.join(" ")));
+            let command = command.join(" ");
+            return Err(StorageError::CommandSyntaxError(
+                command,
+                "Expected an even number of arguments".to_string(),
+            ));
         }
         for i in (1..command.len()).step_by(2) {
             let _ = self.set(command[i].clone(), command[i + 1].clone());
@@ -63,7 +80,10 @@ impl Storage {
 
     fn command_get(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
         if command.len() != 2 {
-            return Err(StorageError::CommandSyntaxError(command.join(" ")));
+            return Err(StorageError::CommandSyntaxError(
+                command.join(" "),
+                "Expected an argument".to_string(),
+            ));
         }
         let output = self.get(command[1].clone());
         match output {
@@ -76,13 +96,17 @@ impl Storage {
     fn get(&self, key: String) -> StorageResult<Option<String>> {
         match self.store.get(&key) {
             Some(StorageValue::String(v)) => return Ok(Some(v.clone())),
+            Some(StorageValue::Integer(v)) => return Ok(Some(v.to_string())),
             None => return Ok(None),
         }
     }
 
     fn command_mget(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
         if command.len() < 2 {
-            return Err(StorageError::CommandSyntaxError(command.join(" ")));
+            return Err(StorageError::CommandSyntaxError(
+                command.join(" "),
+                "Expected at least one argument".to_string(),
+            ));
         }
         let mut values = Vec::new();
         for i in 1..command.len() {
@@ -99,6 +123,36 @@ impl Storage {
             }
         }
         Ok(RESP::Array(values))
+    }
+
+    fn command_incr(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
+        if command.len() != 2 {
+            return Err(StorageError::CommandSyntaxError(
+                command.join(" "),
+                "Expected exactly one argument".to_string(),
+            ));
+        }
+        let key = command.get(1).unwrap();
+        match self.store.get_mut(key) {
+            Some(v) => match v {
+                StorageValue::String(value) => match value.parse::<i64>() {
+                    Ok(parsed_value) => {
+                        let new_value = parsed_value + 1;
+                        *value = new_value.to_string();
+                        Ok(RESP::Integer(new_value))
+                    }
+                    Err(_) => Err(StorageError::ValueNotInteger(value.clone())),
+                },
+                StorageValue::Integer(value) => {
+                    *value += 1;
+                    Ok(RESP::Integer(*value))
+                }
+            },
+            None => {
+                self.store.insert(key.clone(), StorageValue::Integer(1));
+                Ok(RESP::Integer(1))
+            }
+        }
     }
 }
 

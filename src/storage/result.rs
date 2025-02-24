@@ -4,8 +4,10 @@ use std::fmt;
 pub enum StorageError {
     IncorrectRequest,
     CommandInternalError(String),
-    CommandSyntaxError(String),
+    CommandSyntaxError(String, String),
     CommandNotAvailable(String),
+    ValueNotInteger(String),
+    KeyNotFound(String),
 }
 
 impl fmt::Display for StorageError {
@@ -15,11 +17,17 @@ impl fmt::Display for StorageError {
             StorageError::CommandInternalError(command) => {
                 write!(f, "Command internal error: {}", command)
             }
-            StorageError::CommandSyntaxError(command) => {
-                write!(f, "Command syntax error: {}", command)
+            StorageError::CommandSyntaxError(command, message) => {
+                write!(f, "Command syntax error: {} - {}", command, message)
             }
             StorageError::CommandNotAvailable(command) => {
                 write!(f, "Command not available: {}", command)
+            }
+            StorageError::ValueNotInteger(value) => {
+                write!(f, "Value not an integer: {}", value)
+            }
+            StorageError::KeyNotFound(key) => {
+                write!(f, "Key not found: {}", key)
             }
         }
     }

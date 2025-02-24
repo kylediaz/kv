@@ -12,6 +12,7 @@ pub enum RESP {
     BulkString(String),
     Null,
     SimpleString(String),
+    Integer(i64),
 }
 
 impl Display for RESP {
@@ -27,6 +28,10 @@ impl Display for RESP {
             Self::BulkString(s) => write!(f, "${}\r\n{}\r\n", s.len(), s),
             Self::Null => write!(f, "$-1\r\n"),
             Self::SimpleString(s) => write!(f, "+{}\r\n", s),
+            Self::Integer(i) => {
+                let sign = if i.is_negative() { "-" } else { "" };
+                write!(f, ":{}{}\r\n", sign, i.abs())
+            }
         }
     }
 }
