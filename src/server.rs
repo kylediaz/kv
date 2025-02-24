@@ -88,6 +88,10 @@ async fn handle_connection(mut stream: TcpStream, server: Arc<Server>) {
     let mut buffer = [0; 1024];
     loop {
         match stream.read(&mut buffer).await {
+            Ok(0) => {
+                println!("connection closed");
+                break;
+            }
             Ok(size) => {
                 let mut index: usize = 0;
                 let request: RESP = match bytes_to_resp(&buffer[..size].to_vec(), &mut index) {
@@ -110,10 +114,6 @@ async fn handle_connection(mut stream: TcpStream, server: Arc<Server>) {
                     eprintln!("error writing response: {}", e);
                     return;
                 }
-            }
-            Ok(_) => {
-                println!("connection closed");
-                break;
             }
             Err(e) => {
                 println!("error: {}", e);
