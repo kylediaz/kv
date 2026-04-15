@@ -1,7 +1,14 @@
 [package]
 name = "kv"
 version = "0.1.1"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 tokio = { version = "1.38.0", features = ["full"] }
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "resp"
+harness = false
