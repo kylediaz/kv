@@ -30,6 +30,10 @@ pub struct Quicklist<T> {
     tail: Link<T>,
 }
 
+// Safety: No method leaks internal Rc/Refcell references, therefore
+//   there can't be cross-thread aliasing of those Rcs.
+unsafe impl<T> Send for Quicklist<T> where T: Send {}
+
 /**
  * These macros take advantage of the symmetry of doubly linked lists.
  * These functions are implemented from the perspective of left operations.

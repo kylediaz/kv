@@ -8,6 +8,7 @@ pub enum StorageError {
     CommandNotAvailable(String),
     ValueNotInteger(String),
     KeyNotFound(String),
+    WrongType,
 }
 
 impl fmt::Display for StorageError {
@@ -28,6 +29,9 @@ impl fmt::Display for StorageError {
             }
             StorageError::KeyNotFound(key) => {
                 write!(f, "Key not found: {}", key)
+            }
+            StorageError::WrongType => {
+                write!(f, "Operation against a key holding the wrong kind of value")
             }
         }
     }

@@ -4,6 +4,7 @@ use std::env;
 
 mod command;
 mod config;
+mod quicklist;
 mod resp;
 mod server;
 mod storage;

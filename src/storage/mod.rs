@@ -3,20 +3,38 @@ use std::collections::HashMap;
 mod result;
 
 use super::storage::result::{StorageError, StorageResult};
+use crate::quicklist::Quicklist;
 use crate::resp::RESP;
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum StorageValue {
+pub enum PrimitiveStorageValue {
     String(String),
     Integer(i64),
 }
 
-impl From<StorageValue> for RESP {
-    fn from(value: StorageValue) -> RESP {
+pub enum StorageValue {
+    Primitive(PrimitiveStorageValue),
+    Quicklist(Quicklist<PrimitiveStorageValue>),
+}
+
+impl From<PrimitiveStorageValue> for RESP {
+    fn from(value: PrimitiveStorageValue) -> RESP {
         match value {
-            StorageValue::String(s) => RESP::BulkString(s),
-            StorageValue::Integer(i) => RESP::Integer(i),
+            PrimitiveStorageValue::String(s) => RESP::BulkString(s),
+            PrimitiveStorageValue::Integer(i) => RESP::Integer(i),
         }
+    }
+}
+
+impl From<String> for StorageValue {
+    fn from(value: String) -> Self {
+        StorageValue::Primitive(PrimitiveStorageValue::String(value))
+    }
+}
+
+impl From<i64> for StorageValue {
+    fn from(value: i64) -> Self {
+        StorageValue::Primitive(PrimitiveStorageValue::Integer(value))
     }
 }
 
@@ -55,7 +73,10 @@ impl Storage {
     }
 
     fn set(&mut self, key: String, value: String) -> StorageResult<String> {
-        self.store.insert(key, StorageValue::String(value));
+        self.store.insert(
+            key,
+            StorageValue::Primitive(PrimitiveStorageValue::String(value)),
+        );
         Ok(String::from("OK"))
     }
 
@@ -96,8 +117,11 @@ impl Storage {
 
     fn get(&self, key: String) -> StorageResult<Option<String>> {
         match self.store.get(&key) {
-            Some(StorageValue::String(v)) => return Ok(Some(v.clone())),
-            Some(StorageValue::Integer(v)) => return Ok(Some(v.to_string())),
+            Some(StorageValue::Primitive(p)) => match p {
+                PrimitiveStorageValue::String(v) => return Ok(Some(v.clone())),
+                PrimitiveStorageValue::Integer(v) => return Ok(Some(v.to_string())),
+            },
+            Some(_) => return Err(StorageError::WrongType),
             None => return Ok(None),
         }
     }
@@ -116,9 +140,10 @@ impl Storage {
                 values.push(RESP::Null);
             } else {
                 let key = key.unwrap();
-                let value: RESP = match self.store.get(key) {
-                    Some(v) => v.clone().into(),
-                    None => RESP::Null,
+                let value: RESP = match self.get(key.to_string()) {
+                    Ok(None) => RESP::Null,
+                    Ok(Some(v)) => RESP::BulkString(v),
+                    Err(e) => return Err(e),
                 };
                 values.push(value);
             }
@@ -156,8 +181,8 @@ impl Storage {
         }
         let key = command.get(1).unwrap();
         match self.store.get_mut(key) {
-            Some(v) => match v {
-                StorageValue::String(value) => match value.parse::<i64>() {
+            Some(StorageValue::Primitive(v)) => match v {
+                PrimitiveStorageValue::String(value) => match value.parse::<i64>() {
                     Ok(parsed_value) => {
                         let new_value = parsed_value + 1;
                         *value = new_value.to_string();
@@ -165,13 +190,17 @@ impl Storage {
                     }
                     Err(_) => Err(StorageError::ValueNotInteger(value.clone())),
                 },
-                StorageValue::Integer(value) => {
+                PrimitiveStorageValue::Integer(value) => {
                     *value += 1;
                     Ok(RESP::Integer(*value))
                 }
             },
+            Some(_) => Err(StorageError::WrongType),
             None => {
-                self.store.insert(key.clone(), StorageValue::Integer(1));
+                self.store.insert(
+                    key.clone(),
+                    StorageValue::Primitive(PrimitiveStorageValue::Integer(1)),
+                );
                 Ok(RESP::Integer(1))
             }
         }
@@ -204,10 +233,9 @@ mod tests {
     #[test]
     fn test_process_command_get() {
         let mut storage: Storage = Storage::new();
-        storage.store.insert(
-            String::from("akey"),
-            StorageValue::String(String::from("avalue")),
-        );
+        storage
+            .store
+            .insert(String::from("akey"), String::from("avalue").into());
         let command = vec![String::from("get"), String::from("akey")];
         let output = storage.process_command(&command).unwrap();
         assert_eq!(output, RESP::BulkString(String::from("avalue")));
@@ -235,14 +263,12 @@ mod tests {
     #[test]
     fn test_process_command_mget() {
         let mut storage: Storage = Storage::new();
-        storage.store.insert(
-            String::from("akey1"),
-            StorageValue::String(String::from("avalue1")),
-        );
-        storage.store.insert(
-            String::from("akey2"),
-            StorageValue::String(String::from("avalue2")),
-        );
+        storage
+            .store
+            .insert(String::from("akey1"), String::from("avalue1").into());
+        storage
+            .store
+            .insert(String::from("akey2"), String::from("avalue2").into());
 
         let command = vec![
             String::from("mget"),

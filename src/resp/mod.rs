@@ -36,6 +36,18 @@ impl Display for RESP {
     }
 }
 
+impl From<String> for RESP {
+    fn from(value: String) -> Self {
+        RESP::SimpleString(value)
+    }
+}
+
+impl From<i64> for RESP {
+    fn from(value: i64) -> Self {
+        RESP::Integer(value)
+    }
+}
+
 pub fn bytes_to_resp(buffer: &[u8], index: &mut usize) -> RESPResult<RESP> {
     if buffer.len() == 0 {
         return Err(RESPError::Unknown);
