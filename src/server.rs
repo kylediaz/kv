@@ -6,7 +6,7 @@ use tokio::{
     net::{TcpListener, TcpStream},
 };
 
-use crate::resp::{bytes_to_resp, RESP};
+use crate::resp::{RESP, bytes_to_resp};
 use crate::storage::Storage;
 
 use super::command::Command;

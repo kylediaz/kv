@@ -26,7 +26,9 @@ async fn main() -> std::io::Result<()> {
     let config_path: String = if args.len() > 0 && !args[0].starts_with("-") {
         args.remove(0)
     } else {
-        println!("Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf");
+        println!(
+            "Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf"
+        );
         "redis.conf".to_string()
     };
 
