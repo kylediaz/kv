@@ -48,6 +48,18 @@ impl From<i64> for RESP {
     }
 }
 
+impl<T> From<Option<T>> for RESP
+where
+    T: Into<RESP>,
+{
+    fn from(value: Option<T>) -> Self {
+        match value {
+            Some(v) => v.into(),
+            None => RESP::Null,
+        }
+    }
+}
+
 pub fn bytes_to_resp(buffer: &[u8], index: &mut usize) -> RESPResult<RESP> {
     if buffer.len() == 0 {
         return Err(RESPError::Unknown);

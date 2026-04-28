@@ -15,9 +15,15 @@ redis-cli     # connect to REPL
 
 ## Coverage
 
-| Command   | Status |
-| --------- | ------ |
-| SET, MSET | OK     |
-| GET, MGET | OK     |
-| DEL       | OK     |
-| INCR      | OK     |
+| Command             | Status |
+| ------------------- | ------ |
+| SET, MSET           | OK     |
+| GET, MGET           | OK     |
+| DEL                 | OK     |
+| EXISTS              | TODO   |
+| EXPIRES, TTL        | TODO   |
+| INCR                | OK     |
+| HSET, HGET, HGETALL | TODO   |
+| PUSH, POP           | OK     |
+| SADD, SMEMBERS      | TODO   |
+| ZADD                | TODO   |

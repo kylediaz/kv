@@ -3,7 +3,7 @@ use std::collections::HashMap;
 mod result;
 
 use super::storage::result::{StorageError, StorageResult};
-use crate::quicklist::Quicklist;
+use crate::quicklist::{Dequeue, Quicklist};
 use crate::resp::RESP;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -56,6 +56,8 @@ impl Storage {
             "mset" => self.command_mset(&command),
             "del" => self.command_del(&command),
             "incr" => self.command_incr(&command),
+            "lpush" => self.command_lpush(&command),
+            "lpop" => self.command_lpop(&command),
             _ => Err(StorageError::CommandNotAvailable(command[0].clone())),
         }
     }
@@ -203,6 +205,48 @@ impl Storage {
                 );
                 Ok(RESP::Integer(1))
             }
+        }
+    }
+
+    fn command_lpush(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
+        if command.len() != 3 {
+            return Err(StorageError::CommandSyntaxError(
+                command.join(" "),
+                "Expected LPUSH [key] [value]".to_string(),
+            ));
+        }
+        let key = command.get(1).unwrap();
+        let value = command.get(2).unwrap();
+        match self.store.get_mut(key) {
+            Some(StorageValue::Quicklist(l)) => {
+                l.lpush(PrimitiveStorageValue::String(value.to_string()));
+                Ok(RESP::SimpleString(String::from("OK")))
+            }
+            None => {
+                let l = Quicklist::new();
+                self.store
+                    .insert(key.to_string(), StorageValue::Quicklist(l));
+                Ok(RESP::SimpleString(String::from("OK")))
+            }
+            Some(_) => Err(StorageError::WrongType),
+        }
+    }
+
+    fn command_lpop(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
+        if command.len() != 2 {
+            return Err(StorageError::CommandSyntaxError(
+                command.join(" "),
+                "Expected LPOP [key]".to_string(),
+            ));
+        }
+        let key = command.get(1).unwrap();
+        match self.store.get_mut(key) {
+            Some(StorageValue::Quicklist(l)) => {
+                let value = l.lpop();
+                Ok(value.into())
+            }
+            None => Err(StorageError::KeyNotFound(key.to_string())),
+            Some(_) => Err(StorageError::WrongType),
         }
     }
 }
