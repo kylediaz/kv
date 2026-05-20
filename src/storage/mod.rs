@@ -58,6 +58,8 @@ impl Storage {
             "incr" => self.command_incr(&command),
             "lpush" => self.command_lpush(&command),
             "lpop" => self.command_lpop(&command),
+            "rpush" => self.command_rpush(&command),
+            "rpop" => self.command_rpop(&command),
             _ => Err(StorageError::CommandNotAvailable(command[0].clone())),
         }
     }
@@ -217,13 +219,15 @@ impl Storage {
         }
         let key = command.get(1).unwrap();
         let value = command.get(2).unwrap();
+        let storage_value = PrimitiveStorageValue::String(value.to_string());
         match self.store.get_mut(key) {
             Some(StorageValue::Quicklist(l)) => {
-                l.lpush(PrimitiveStorageValue::String(value.to_string()));
+                l.lpush(storage_value);
                 Ok(RESP::SimpleString(String::from("OK")))
             }
             None => {
-                let l = Quicklist::new();
+                let mut l = Quicklist::new();
+                l.lpush(storage_value);
                 self.store
                     .insert(key.to_string(), StorageValue::Quicklist(l));
                 Ok(RESP::SimpleString(String::from("OK")))
@@ -243,6 +247,50 @@ impl Storage {
         match self.store.get_mut(key) {
             Some(StorageValue::Quicklist(l)) => {
                 let value = l.lpop();
+                Ok(value.into())
+            }
+            None => Err(StorageError::KeyNotFound(key.to_string())),
+            Some(_) => Err(StorageError::WrongType),
+        }
+    }
+
+    fn command_rpush(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
+        if command.len() != 3 {
+            return Err(StorageError::CommandSyntaxError(
+                command.join(" "),
+                "Expected RPUSH [key] [value]".to_string(),
+            ));
+        }
+        let key = command.get(1).unwrap();
+        let value = command.get(2).unwrap();
+        let storage_value = PrimitiveStorageValue::String(value.to_string());
+        match self.store.get_mut(key) {
+            Some(StorageValue::Quicklist(l)) => {
+                l.rpush(storage_value);
+                Ok(RESP::SimpleString(String::from("OK")))
+            }
+            None => {
+                let mut l = Quicklist::new();
+                l.rpush(storage_value);
+                self.store
+                    .insert(key.to_string(), StorageValue::Quicklist(l));
+                Ok(RESP::SimpleString(String::from("OK")))
+            }
+            Some(_) => Err(StorageError::WrongType),
+        }
+    }
+
+    fn command_rpop(&mut self, command: &Vec<String>) -> StorageResult<RESP> {
+        if command.len() != 2 {
+            return Err(StorageError::CommandSyntaxError(
+                command.join(" "),
+                "Expected RPOP [key]".to_string(),
+            ));
+        }
+        let key = command.get(1).unwrap();
+        match self.store.get_mut(key) {
+            Some(StorageValue::Quicklist(l)) => {
+                let value = l.rpop();
                 Ok(value.into())
             }
             None => Err(StorageError::KeyNotFound(key.to_string())),

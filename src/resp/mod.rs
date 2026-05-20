@@ -13,6 +13,7 @@ pub enum RESP {
     Null,
     SimpleString(String),
     Integer(i64),
+    Error(String),
 }
 
 impl Display for RESP {
@@ -32,6 +33,7 @@ impl Display for RESP {
                 let sign = if i.is_negative() { "-" } else { "" };
                 write!(f, ":{}{}\r\n", sign, i.abs())
             }
+            Self::Error(s) => write!(f, "-{}\r\n", s),
         }
     }
 }

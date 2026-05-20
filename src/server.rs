@@ -97,21 +97,18 @@ async fn handle_connection(mut stream: TcpStream, server: Arc<Server>) {
                     Ok(v) => v,
                     Err(e) => {
                         let request_str = buffer_to_debug_string(&buffer[..size]);
-                        eprintln!("error parsing request {}: {}", request_str, e);
-                        return;
+                        RESP::Error(format!("error parsing request {}: {}", request_str, e))
                     }
                 };
                 let response: RESP = match process_request(request, server.clone()) {
                     Ok(v) => v,
                     Err(e) => {
                         let request_str = buffer_to_debug_string(&buffer[..size]);
-                        eprintln!("error processing request {}: {}", request_str, e);
-                        return;
+                        RESP::Error(format!("error processing request {}: {}", request_str, e))
                     }
                 };
                 if let Err(e) = stream.write_all(&response.to_string().as_bytes()).await {
-                    eprintln!("error writing response: {}", e);
-                    return;
+                    eprintln!("error writing response: {}", e)
                 }
             }
             Err(e) => {
