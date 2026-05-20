@@ -1,13 +1,13 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 
-use kv::quicklist::{Dequeue, Quicklist};
+use kv::ds::list::{Dequeue, List};
 use rand::{Rng, SeedableRng, rngs::ChaCha8Rng};
 use std::hint::black_box;
 
 fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("quicklist i32 stairs", |b| {
         b.iter(|| {
-            let mut list: Quicklist<i32> = Quicklist::new();
+            let mut list: List<i32> = List::new();
             // This will generate a structure ...7 5 3 1 2 4 6...
             for n in 1..=1000 {
                 if n % 2 == 0 {
@@ -31,7 +31,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("quicklist u32 seeded random", |b| {
         b.iter(|| {
             let mut rng = ChaCha8Rng::seed_from_u64(10);
-            let mut list: Quicklist<u32> = Quicklist::new();
+            let mut list: List<u32> = List::new();
             for n in 1..=10_000 {
                 let action = rng.next_u64();
                 // Use the 32 least significant bits to determine the action

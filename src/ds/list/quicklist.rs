@@ -2,6 +2,8 @@ use std::cell::RefCell;
 use std::fmt::Debug;
 use std::rc::Rc;
 
+use crate::ds::list::Dequeue;
+
 /// quicklist -- fast dequeue data structure implementation
 ///
 /// A quicklist is an implementation of a linked list dequeue with
@@ -9,13 +11,6 @@ use std::rc::Rc;
 /// I thought of this approach all on my own but then I googled
 /// it and it turns out Redis already uses it.
 ///
-
-pub trait Dequeue<T> {
-    fn lpush(&mut self, val: T);
-    fn rpush(&mut self, val: T);
-    fn lpop(&mut self) -> Option<T>;
-    fn rpop(&mut self) -> Option<T>;
-}
 
 struct Node<T> {
     left: Link<T>,
@@ -107,7 +102,7 @@ impl<T> Dequeue<T> for Quicklist<T> {
 }
 
 impl<T> Debug for Quicklist<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         todo!()
     }
 }

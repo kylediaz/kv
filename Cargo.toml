@@ -8,7 +8,7 @@ tokio = { version = "1.38.0", features = ["full"] }
 
 [dev-dependencies]
 criterion = "0.5.1"
-rand = "0.10.1"
+rand = { version = "0.10.1", features = ["chacha"] }
 
 [[bench]]
 name = "resp"
@@ -19,5 +19,5 @@ name = "storage"
 harness = false
 
 [[bench]]
-name = "quicklist"
+name = "list"
 harness = false

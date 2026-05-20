@@ -3,7 +3,7 @@ use std::collections::HashMap;
 mod result;
 
 use super::storage::result::{StorageError, StorageResult};
-use crate::quicklist::{Dequeue, Quicklist};
+use crate::ds::list::{Dequeue, List};
 use crate::resp::RESP;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -14,7 +14,7 @@ pub enum PrimitiveStorageValue {
 
 pub enum StorageValue {
     Primitive(PrimitiveStorageValue),
-    Quicklist(Quicklist<PrimitiveStorageValue>),
+    List(List<PrimitiveStorageValue>),
 }
 
 impl From<PrimitiveStorageValue> for RESP {
@@ -221,15 +221,14 @@ impl Storage {
         let value = command.get(2).unwrap();
         let storage_value = PrimitiveStorageValue::String(value.to_string());
         match self.store.get_mut(key) {
-            Some(StorageValue::Quicklist(l)) => {
+            Some(StorageValue::List(l)) => {
                 l.lpush(storage_value);
                 Ok(RESP::SimpleString(String::from("OK")))
             }
             None => {
-                let mut l = Quicklist::new();
+                let mut l = List::new();
                 l.lpush(storage_value);
-                self.store
-                    .insert(key.to_string(), StorageValue::Quicklist(l));
+                self.store.insert(key.to_string(), StorageValue::List(l));
                 Ok(RESP::SimpleString(String::from("OK")))
             }
             Some(_) => Err(StorageError::WrongType),
@@ -245,7 +244,7 @@ impl Storage {
         }
         let key = command.get(1).unwrap();
         match self.store.get_mut(key) {
-            Some(StorageValue::Quicklist(l)) => {
+            Some(StorageValue::List(l)) => {
                 let value = l.lpop();
                 Ok(value.into())
             }
@@ -265,15 +264,14 @@ impl Storage {
         let value = command.get(2).unwrap();
         let storage_value = PrimitiveStorageValue::String(value.to_string());
         match self.store.get_mut(key) {
-            Some(StorageValue::Quicklist(l)) => {
+            Some(StorageValue::List(l)) => {
                 l.rpush(storage_value);
                 Ok(RESP::SimpleString(String::from("OK")))
             }
             None => {
-                let mut l = Quicklist::new();
+                let mut l = List::new();
                 l.rpush(storage_value);
-                self.store
-                    .insert(key.to_string(), StorageValue::Quicklist(l));
+                self.store.insert(key.to_string(), StorageValue::List(l));
                 Ok(RESP::SimpleString(String::from("OK")))
             }
             Some(_) => Err(StorageError::WrongType),
@@ -289,7 +287,7 @@ impl Storage {
         }
         let key = command.get(1).unwrap();
         match self.store.get_mut(key) {
-            Some(StorageValue::Quicklist(l)) => {
+            Some(StorageValue::List(l)) => {
                 let value = l.rpop();
                 Ok(value.into())
             }
