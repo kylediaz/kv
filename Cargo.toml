@@ -15,5 +15,9 @@ name = "resp"
 harness = false
 
 [[bench]]
+name = "storage"
+harness = false
+
+[[bench]]
 name = "quicklist"
 harness = false
