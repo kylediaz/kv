@@ -3,7 +3,7 @@ use std::collections::HashMap;
 mod result;
 
 use super::storage::result::{StorageError, StorageResult};
-use crate::ds::list::{Dequeue, List};
+use crate::ds::list::{Deque, List};
 use crate::resp::RESP;
 
 #[derive(Debug, PartialEq, Clone)]

@@ -2,7 +2,13 @@ mod array;
 mod dll;
 mod quicklist;
 
-pub trait Dequeue<T> {
+pub trait Deque<T> {
+    fn len(&self) -> usize;
+
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     fn lpush(&mut self, val: T);
     fn rpush(&mut self, val: T);
     fn lpop(&mut self) -> Option<T>;
@@ -14,6 +20,13 @@ pub use self::quicklist::Quicklist as List;
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn test_len_empty() {
+        let list: List<i32> = List::new();
+        assert!(list.len() == 0);
+        assert!(list.is_empty());
+    }
 
     #[test]
     fn test_lpop_empty() {
@@ -88,6 +101,31 @@ mod test {
             }
         }
         for n in (1..=100).rev() {
+            let v;
+            if n % 2 == 0 {
+                v = list.rpop();
+            } else {
+                v = list.lpop();
+            }
+            println!("{:?} {}", v, n);
+            assert_eq!(v.unwrap(), n);
+        }
+    }
+
+    /// Tests a large amount of ops that will exceed
+    /// page size of hybrid implementations
+    #[test]
+    fn test_lrops_big() {
+        let mut list: List<i32> = List::new();
+        // This will generate a structure ...7531246...
+        for n in 1..=100_000 {
+            if n % 2 == 0 {
+                list.rpush(n);
+            } else {
+                list.lpush(n);
+            }
+        }
+        for n in (1..=100_000).rev() {
             let v;
             if n % 2 == 0 {
                 v = list.rpop();

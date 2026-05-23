@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::fmt::Debug;
 use std::rc::Rc;
 
-use crate::ds::list::Dequeue;
+use crate::ds::list::Deque;
 use crate::ds::list::array::ArrayDeque;
 
 /// quicklist -- fast dequeue data structure implementation
@@ -19,22 +19,12 @@ struct Node<T> {
 }
 
 impl<T> Node<T> {
-    fn empty() -> Self {
+    fn new() -> Self {
         Node {
             prev: None,
             next: None,
             deque: ArrayDeque::empty(),
         }
-    }
-
-    fn new(initial_value: T, prev: Option<Link<T>>, next: Option<Link<T>>) -> Self {
-        let mut output = Node {
-            prev: prev,
-            next: next,
-            deque: ArrayDeque::empty(),
-        };
-        output.deque.rpush(initial_value);
-        output
     }
 }
 
@@ -50,6 +40,7 @@ type Link<T> = Rc<RefCell<Node<T>>>;
 pub struct Quicklist<T> {
     head: Option<Link<T>>,
     tail: Option<Link<T>>,
+    len: usize,
 }
 
 // Safety: No method leaks internal Rc/Refcell references, therefore
@@ -61,11 +52,12 @@ impl<T> Quicklist<T> {
         Self {
             head: None,
             tail: None,
+            len: 0,
         }
     }
 
     fn node_rpush(&mut self) -> Link<T> {
-        let new_node = Rc::new(RefCell::new(Node::empty()));
+        let new_node = Rc::new(RefCell::new(Node::new()));
         assert_eq!(self.tail.is_none(), self.head.is_none());
         if self.tail.is_none() && self.head.is_none() {
             self.head = Some(new_node.clone());
@@ -95,7 +87,7 @@ impl<T> Quicklist<T> {
     }
 
     fn node_lpush(&mut self) -> Link<T> {
-        let new_node = Rc::new(RefCell::new(Node::empty()));
+        let new_node = Rc::new(RefCell::new(Node::new()));
         assert_eq!(self.tail.is_none(), self.head.is_none());
         if self.tail.is_none() && self.head.is_none() {
             self.head = Some(new_node.clone());
@@ -125,7 +117,11 @@ impl<T> Quicklist<T> {
     }
 }
 
-impl<T> Dequeue<T> for Quicklist<T> {
+impl<T> Deque<T> for Quicklist<T> {
+    fn len(&self) -> usize {
+        self.len
+    }
+
     fn rpush(&mut self, val: T) {
         let tail = match self.tail.clone() {
             Some(tail) => tail,
@@ -137,6 +133,7 @@ impl<T> Dequeue<T> for Quicklist<T> {
         } else {
             tail.borrow_mut().deque.rpush(val);
         };
+        self.len += 1;
     }
 
     fn rpop(&mut self) -> Option<T> {
@@ -146,6 +143,7 @@ impl<T> Dequeue<T> for Quicklist<T> {
             drop(tail);
             self.node_rpop();
         };
+        self.len -= 1;
         output
     }
 
@@ -160,6 +158,7 @@ impl<T> Dequeue<T> for Quicklist<T> {
         } else {
             head.borrow_mut().deque.lpush(val);
         };
+        self.len += 1;
     }
 
     fn lpop(&mut self) -> Option<T> {
@@ -169,6 +168,7 @@ impl<T> Dequeue<T> for Quicklist<T> {
             drop(head);
             self.node_lpop();
         };
+        self.len -= 1;
         output
     }
 }

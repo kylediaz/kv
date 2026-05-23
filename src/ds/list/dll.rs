@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::fmt::Debug;
 use std::rc::Rc;
 
-use crate::ds::list::Dequeue;
+use crate::ds::list::Deque;
 
 struct Node<T> {
     left: Link<T>,
@@ -15,6 +15,7 @@ type Link<T> = Option<Rc<RefCell<Node<T>>>>;
 pub struct DoublyLinkedList<T> {
     head: Link<T>,
     tail: Link<T>,
+    len: usize,
 }
 
 // Safety: No method leaks internal Rc/Refcell references, therefore
@@ -33,6 +34,7 @@ macro_rules! push_impl {
             $next: $self.$head.clone(),
             value: $val,
         }));
+        $self.len += 1;
         match $self.$head.take() {
             None => {
                 $self.head = Some(new_node.clone());
@@ -59,6 +61,7 @@ macro_rules! pop_impl {
             }
         }
 
+        $self.len -= 1;
         match Rc::try_unwrap(head) {
             Ok(node) => Some(node.into_inner().value),
             Err(_) => panic!("Invalid state"),
@@ -71,11 +74,16 @@ impl<T> DoublyLinkedList<T> {
         Self {
             head: None,
             tail: None,
+            len: 0,
         }
     }
 }
 
-impl<T> Dequeue<T> for DoublyLinkedList<T> {
+impl<T> Deque<T> for DoublyLinkedList<T> {
+    fn len(&self) -> usize {
+        self.len
+    }
+
     fn rpush(&mut self, val: T) {
         push_impl!(self, val, tail, left, right)
     }

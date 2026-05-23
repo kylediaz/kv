@@ -1,4 +1,4 @@
-use crate::ds::list::Dequeue;
+use crate::ds::list::Deque;
 
 /// An array-based deque implementation with fixed capacity.
 /// Meant to be used as part of hybrid data structures.
@@ -38,20 +38,15 @@ impl<T> ArrayDeque<T> {
         }
     }
 
-    pub fn len(&self) -> usize {
-        (PAGE_SIZE + self.r - self.l) % PAGE_SIZE
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
     pub fn is_full(&self) -> bool {
         self.len() == PAGE_SIZE - 1
     }
 }
 
-impl<T> Dequeue<T> for ArrayDeque<T> {
+impl<T> Deque<T> for ArrayDeque<T> {
+    fn len(&self) -> usize {
+        (PAGE_SIZE + self.r - self.l) % PAGE_SIZE
+    }
     fn rpush(&mut self, val: T) {
         assert!(!self.is_full());
         let old = self.values[self.r].replace(val);

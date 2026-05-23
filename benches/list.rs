@@ -1,6 +1,6 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 
-use kv::ds::list::{Dequeue, List};
+use kv::ds::list::{Deque, List};
 use rand::{Rng, SeedableRng, rngs::ChaCha8Rng};
 use std::hint::black_box;
 
