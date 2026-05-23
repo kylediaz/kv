@@ -5,18 +5,18 @@ use rand::{Rng, SeedableRng, rngs::ChaCha8Rng};
 use std::hint::black_box;
 
 fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function("quicklist i32 stairs", |b| {
+    c.bench_function("list i32 stairs", |b| {
         b.iter(|| {
             let mut list: List<i32> = List::new();
             // This will generate a structure ...7 5 3 1 2 4 6...
-            for n in 1..=1000 {
+            for n in 1..=100_000 {
                 if n % 2 == 0 {
                     list.rpush(black_box(n));
                 } else {
                     list.lpush(black_box(n));
                 }
             }
-            for n in (1..=1000).rev() {
+            for n in (1..=100_000).rev() {
                 let v;
                 if n % 2 == 0 {
                     v = list.rpop();
@@ -28,7 +28,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         })
     });
 
-    c.bench_function("quicklist u32 seeded random", |b| {
+    c.bench_function("list u32 seeded random", |b| {
         b.iter(|| {
             let mut rng = ChaCha8Rng::seed_from_u64(10);
             let mut list: List<u32> = List::new();

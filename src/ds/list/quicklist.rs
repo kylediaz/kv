@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use std::rc::Rc;
 
 use crate::ds::list::Dequeue;
+use crate::ds::list::array::ArrayDeque;
 
 /// quicklist -- fast dequeue data structure implementation
 ///
@@ -10,32 +11,11 @@ use crate::ds::list::Dequeue;
 /// the same cache-locality optimization technique as a B-tree.
 /// I thought of this approach all on my own but then I googled
 /// it, it turns out Redis already uses it. Such is life.
-///
 
-const PAGE_SIZE: usize = 4096;
-
-/// Capacity = PAGE_SIZE - 1
-/// Invariants:
-/// - 0 <= l, r < PAGE_SIZE
-/// - if l <= r: values[i].is_some() on [l, r)
-/// - if r < l:  values[i].is_some() on [0, r), [l, PAGE_SIZE)
 struct Node<T> {
     prev: Option<Link<T>>,
     next: Option<Link<T>>,
-    values: [Option<T>; PAGE_SIZE],
-    l: usize,
-    r: usize,
-}
-
-macro_rules! wrapping_add {
-    ($value:expr, $diff:expr) => {
-        $value = ($value + $diff) % PAGE_SIZE
-    };
-}
-macro_rules! wrapping_dec {
-    ($value:expr, $diff:expr) => {
-        $value = (PAGE_SIZE + $value - $diff) % PAGE_SIZE
-    };
+    deque: ArrayDeque<T>,
 }
 
 impl<T> Node<T> {
@@ -43,64 +23,18 @@ impl<T> Node<T> {
         Node {
             prev: None,
             next: None,
-            values: [const { None }; PAGE_SIZE],
-            l: 0,
-            r: 0,
+            deque: ArrayDeque::empty(),
         }
     }
 
-    fn new(initial_val: T, prev: Option<Link<T>>, next: Option<Link<T>>) -> Self {
+    fn new(initial_value: T, prev: Option<Link<T>>, next: Option<Link<T>>) -> Self {
         let mut output = Node {
             prev: prev,
             next: next,
-            values: [const { None }; PAGE_SIZE],
-            l: 0,
-            r: 0,
+            deque: ArrayDeque::empty(),
         };
-        output.rpush(initial_val);
+        output.deque.rpush(initial_value);
         output
-    }
-
-    fn len(&self) -> usize {
-        (PAGE_SIZE + self.r - self.l) % PAGE_SIZE
-    }
-
-    fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    fn is_full(&self) -> bool {
-        self.len() == PAGE_SIZE - 1
-    }
-
-    fn rpush(&mut self, val: T) {
-        assert!(!self.is_full());
-        let old = self.values[self.r].replace(val);
-        wrapping_add!(self.r, 1);
-        assert!(old.is_none());
-    }
-
-    fn rpop(&mut self) -> T {
-        assert!(!self.is_empty());
-        wrapping_dec!(self.r, 1);
-        let output = self.values[self.r].take();
-        assert!(output.is_some());
-        output.unwrap()
-    }
-
-    fn lpush(&mut self, val: T) {
-        assert!(!self.is_full());
-        wrapping_dec!(self.l, 1);
-        let old = self.values[self.l].replace(val);
-        assert!(old.is_none());
-    }
-
-    fn lpop(&mut self) -> T {
-        assert!(!self.is_empty());
-        let output = self.values[self.l].take();
-        wrapping_add!(self.l, 1);
-        assert!(output.is_some());
-        output.unwrap()
     }
 }
 
@@ -197,22 +131,22 @@ impl<T> Dequeue<T> for Quicklist<T> {
             Some(tail) => tail,
             None => self.node_rpush(),
         };
-        if tail.borrow_mut().is_full() {
+        if tail.borrow_mut().deque.is_full() {
             let new_node_link = self.node_rpush();
-            new_node_link.borrow_mut().rpush(val);
+            new_node_link.borrow_mut().deque.rpush(val);
         } else {
-            tail.borrow_mut().rpush(val);
+            tail.borrow_mut().deque.rpush(val);
         };
     }
 
     fn rpop(&mut self) -> Option<T> {
         let mut tail = self.tail.as_mut()?.borrow_mut();
-        let output = tail.rpop();
-        if tail.is_empty() {
+        let output = tail.deque.rpop();
+        if tail.deque.is_empty() {
             drop(tail);
             self.node_rpop();
         };
-        Some(output)
+        output
     }
 
     fn lpush(&mut self, val: T) {
@@ -220,48 +154,27 @@ impl<T> Dequeue<T> for Quicklist<T> {
             Some(head) => head,
             None => self.node_rpush(),
         };
-        if head.borrow_mut().is_full() {
+        if head.borrow_mut().deque.is_full() {
             let new_node_link = self.node_lpush();
-            new_node_link.borrow_mut().lpush(val);
+            new_node_link.borrow_mut().deque.lpush(val);
         } else {
-            head.borrow_mut().lpush(val);
+            head.borrow_mut().deque.lpush(val);
         };
     }
 
     fn lpop(&mut self) -> Option<T> {
         let mut head = self.head.as_mut()?.borrow_mut();
-        let output = head.lpop();
-        if head.is_empty() {
+        let output = head.deque.lpop();
+        if head.deque.is_empty() {
             drop(head);
             self.node_lpop();
         };
-        Some(output)
+        output
     }
 }
 
 impl<T> Debug for Quicklist<T> {
     fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         todo!()
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_node_len() {
-        let mut node: Node<usize> = Node::empty();
-        assert!(node.is_empty());
-        for i in 1..PAGE_SIZE {
-            node.lpush(i);
-            assert_eq!(node.len(), i);
-        }
-        assert!(node.is_full());
-        for i in (0..PAGE_SIZE - 1).rev() {
-            node.lpop();
-            assert_eq!(node.len(), i);
-        }
-        assert!(node.is_empty());
     }
 }
