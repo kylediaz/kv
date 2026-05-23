@@ -14,12 +14,10 @@ jobs:
       - name: "Install Flox"
         uses: "flox/install-flox-action@v2"
 
-      - name: "Spawn Server"
-        uses: "flox/activate-action@v1"
-        with:
-          command: redis-server &
-
       - name: "Check Redis Compatiblity"
         uses: "flox/activate-action@v1"
         with:
-          command: pytest test/e2e/*
+          command: |
+            redis-server --save "" --appendonly no --daemonize yes
+            for i in {1..10}; do redis-cli ping && break; sleep 1; done
+            pytest test/e2e/*
