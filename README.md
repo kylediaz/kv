@@ -24,6 +24,6 @@ redis-cli     # connect to REPL
 | EXPIRES, TTL        | TODO   |
 | INCR                | OK     |
 | HSET, HGET, HGETALL | TODO   |
-| PUSH, POP           | OK     |
+| PUSH, POP, LEN      | OK     |
 | SADD, SMEMBERS      | TODO   |
 | ZADD                | TODO   |

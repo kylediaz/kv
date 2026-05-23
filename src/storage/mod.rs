@@ -56,6 +56,7 @@ impl Storage {
             "mset" => self.command_mset(&command),
             "del" => self.command_del(&command),
             "incr" => self.command_incr(&command),
+            "llen" => self.command_llen(&command),
             "lpush" => self.command_lpush(&command),
             "lpop" => self.command_lpop(&command),
             "rpush" => self.command_rpush(&command),
@@ -207,6 +208,23 @@ impl Storage {
                 );
                 Ok(RESP::Integer(1))
             }
+        }
+    }
+
+    fn command_llen(&self, command: &Vec<String>) -> StorageResult<RESP> {
+        if command.len() != 2 {
+            return Err(StorageError::CommandSyntaxError(
+                command.join(" "),
+                "wrong number of arguments for command".to_string(),
+            ));
+        };
+        let key = command.get(1).unwrap();
+        match self.store.get(key) {
+            Some(value) => match value {
+                StorageValue::List(list) => Ok(RESP::Integer(list.len() as i64)),
+                _ => Err(StorageError::WrongType),
+            },
+            None => Ok(RESP::Integer(0)),
         }
     }
 

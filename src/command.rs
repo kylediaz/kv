@@ -13,7 +13,8 @@ pub enum Command {
     MGet,
     MSet,
 
-    // K-Array
+    // List
+    LLen,
     LPush,
     LPop,
     RPush,
@@ -37,7 +38,8 @@ impl Command {
             "MGET" => Some(Command::MGet),
             "MSET" => Some(Command::MSet),
 
-            // K-Array
+            // Len
+            "LLEN" => Some(Command::LLen),
             "LPUSH" => Some(Command::LPush),
             "LPOP" => Some(Command::LPop),
             "RPUSH" => Some(Command::RPush),

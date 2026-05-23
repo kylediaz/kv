@@ -19,12 +19,12 @@ struct Node<T> {
 }
 
 impl<T> Node<T> {
-    fn new() -> Self {
-        Node {
+    fn new() -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Node {
             prev: None,
             next: None,
             deque: ArrayDeque::empty(),
-        }
+        }))
     }
 }
 
@@ -57,59 +57,63 @@ impl<T> Quicklist<T> {
     }
 
     fn node_rpush(&mut self) -> Link<T> {
-        let new_node = Rc::new(RefCell::new(Node::new()));
+        let new_node = Node::new();
         assert_eq!(self.tail.is_none(), self.head.is_none());
-        if self.tail.is_none() && self.head.is_none() {
-            self.head = Some(new_node.clone());
-            self.tail = Some(new_node.clone());
-        } else {
-            let old_tail = self.tail.replace(new_node.clone()).unwrap();
-            old_tail.borrow_mut().next = Some(new_node.clone());
-            new_node.borrow_mut().prev = Some(old_tail);
+        match self.tail.replace(new_node.clone()) {
+            Some(old_tail) => {
+                old_tail.borrow_mut().next = Some(new_node.clone());
+                new_node.borrow_mut().prev = Some(old_tail);
+            }
+            None => {
+                self.head = Some(new_node.clone());
+            }
         }
         new_node
     }
 
     fn node_rpop(&mut self) -> Option<Node<T>> {
-        let tail_rc = self.tail.take()?;
-        if Rc::ptr_eq(self.head.as_ref().unwrap(), &tail_rc) {
+        let old_tail_rc = self.tail.take()?;
+        if Rc::ptr_eq(self.head.as_ref().unwrap(), &old_tail_rc) {
             self.head = None;
             self.tail = None;
         } else {
-            self.tail = tail_rc.borrow_mut().prev.take();
-            self.tail.as_mut().unwrap().borrow_mut().next = None;
+            let new_tail = old_tail_rc.borrow_mut().prev.take().unwrap();
+            new_tail.borrow_mut().next = None;
+            self.tail = Some(new_tail);
         };
-        let node = match Rc::try_unwrap(tail_rc) {
+        let old_tail_node = match Rc::try_unwrap(old_tail_rc) {
             Ok(cell) => cell.into_inner(),
             Err(_) => panic!("Unreachable"),
         };
-        Some(node)
+        Some(old_tail_node)
     }
 
     fn node_lpush(&mut self) -> Link<T> {
-        let new_node = Rc::new(RefCell::new(Node::new()));
+        let new_node = Node::new();
         assert_eq!(self.tail.is_none(), self.head.is_none());
-        if self.tail.is_none() && self.head.is_none() {
-            self.head = Some(new_node.clone());
-            self.tail = Some(new_node.clone());
-        } else {
-            let old_head = self.head.replace(new_node.clone()).unwrap();
-            old_head.borrow_mut().prev = Some(new_node.clone());
-            new_node.borrow_mut().next = Some(old_head);
+        match self.head.replace(new_node.clone()) {
+            Some(old_head) => {
+                old_head.borrow_mut().prev = Some(new_node.clone());
+                new_node.borrow_mut().next = Some(old_head);
+            }
+            None => {
+                self.tail = Some(new_node.clone());
+            }
         }
         new_node
     }
 
     fn node_lpop(&mut self) -> Option<Node<T>> {
-        let head_rc = self.head.take()?;
-        if Rc::ptr_eq(self.tail.as_ref().unwrap(), &head_rc) {
+        let old_head_rc = self.head.take()?;
+        if Rc::ptr_eq(self.tail.as_ref().unwrap(), &old_head_rc) {
             self.head = None;
             self.tail = None;
         } else {
-            self.head = head_rc.borrow_mut().next.take();
-            self.head.as_mut().unwrap().borrow_mut().prev = None;
+            let new_head = old_head_rc.borrow_mut().next.take().unwrap();
+            new_head.borrow_mut().prev = None;
+            self.head = Some(new_head);
         };
-        let node = match Rc::try_unwrap(head_rc) {
+        let node = match Rc::try_unwrap(old_head_rc) {
             Ok(cell) => cell.into_inner(),
             Err(_) => panic!("Unreachable"),
         };
