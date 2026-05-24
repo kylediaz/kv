@@ -15,7 +15,7 @@ pub trait Deque<T> {
     fn rpop(&mut self) -> Option<T>;
 }
 
-pub use self::quicklist::Quicklist as List;
+pub use self::dll::DoublyLinkedList as List;
 
 #[cfg(test)]
 mod test {
@@ -31,13 +31,15 @@ mod test {
     #[test]
     fn test_lpop_empty() {
         let mut list: List<i32> = List::new();
-        assert!(list.lpop().is_none())
+        assert!(list.lpop().is_none());
+        assert!(list.is_empty());
     }
 
     #[test]
     fn test_rpop_empty() {
         let mut list: List<i32> = List::new();
-        assert!(list.rpop().is_none())
+        assert!(list.rpop().is_none());
+        assert!(list.is_empty());
     }
 
     #[test]

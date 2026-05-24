@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 
-use std::cell::RefCell;
 use std::fmt::Debug;
-use std::rc::Rc;
+use std::ptr;
 
 use crate::ds::list::Deque;
 
@@ -12,7 +11,7 @@ struct Node<T> {
     value: T,
 }
 
-type Link<T> = Option<Rc<RefCell<Node<T>>>>;
+type Link<T> = *mut Node<T>;
 
 pub struct DoublyLinkedList<T> {
     head: Link<T>,
@@ -31,20 +30,20 @@ unsafe impl<T> Send for DoublyLinkedList<T> where T: Send {}
 
 macro_rules! push_impl {
     ($self:expr, $val:expr, $head:ident, $prev:ident, $next:ident) => {{
-        let new_node = Rc::new(RefCell::new(Node {
-            $prev: None,
-            $next: $self.$head.clone(),
-            value: $val,
-        }));
-        $self.len += 1;
-        match $self.$head.take() {
-            None => {
-                $self.head = Some(new_node.clone());
-                $self.tail = Some(new_node);
-            }
-            Some(old_head) => {
-                old_head.borrow_mut().$prev = Some(new_node.clone());
-                $self.$head = Some(new_node);
+        unsafe {
+            let new_node = Box::into_raw(Box::new(Node {
+                $prev: ptr::null_mut(),
+                $next: $self.$head,
+                value: $val,
+            }));
+            $self.len += 1;
+            if $self.$head.is_null() {
+                $self.head = new_node;
+                $self.tail = new_node;
+            } else {
+                let old_head = $self.$head;
+                (*old_head).$prev = new_node;
+                $self.$head = new_node;
             }
         }
     }};
@@ -52,21 +51,20 @@ macro_rules! push_impl {
 
 macro_rules! pop_impl {
     ($self:expr, $head:ident, $tail:ident, $prev:ident, $next:ident) => {{
-        let head = $self.$head.take()?;
-        let next = head.borrow_mut().$next.take();
-
-        match next {
-            None => $self.$tail = None,
-            Some(next) => {
-                next.borrow_mut().$prev = None;
-                $self.$head = Some(next)
+        unsafe {
+            if $self.$head.is_null() {
+                None
+            } else {
+                let old_head = Box::from_raw($self.$head);
+                $self.$head = old_head.$next;
+                if $self.$head.is_null() {
+                    $self.$tail = ptr::null_mut();
+                } else {
+                    (*$self.$head).$prev = ptr::null_mut();
+                };
+                $self.len -= 1;
+                Some(old_head.value)
             }
-        }
-
-        $self.len -= 1;
-        match Rc::try_unwrap(head) {
-            Ok(node) => Some(node.into_inner().value),
-            Err(_) => panic!("Invalid state"),
         }
     }};
 }
@@ -74,8 +72,8 @@ macro_rules! pop_impl {
 impl<T> DoublyLinkedList<T> {
     pub fn new() -> Self {
         Self {
-            head: None,
-            tail: None,
+            head: ptr::null_mut(),
+            tail: ptr::null_mut(),
             len: 0,
         }
     }
@@ -106,5 +104,11 @@ impl<T> Deque<T> for DoublyLinkedList<T> {
 impl<T> Debug for DoublyLinkedList<T> {
     fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         todo!()
+    }
+}
+
+impl<T> Drop for DoublyLinkedList<T> {
+    fn drop(&mut self) {
+        while let Some(_) = self.rpop() {}
     }
 }
