@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::cell::RefCell;
 use std::fmt::Debug;
 use std::rc::Rc;

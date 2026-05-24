@@ -115,6 +115,7 @@ mod test {
     /// Tests a large amount of ops that will exceed
     /// page size of hybrid implementations
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_lrops_big() {
         let mut list: List<i32> = List::new();
         // This will generate a structure ...7531246...
