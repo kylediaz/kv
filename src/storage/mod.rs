@@ -241,13 +241,14 @@ impl Storage {
         match self.store.get_mut(key) {
             Some(StorageValue::List(l)) => {
                 l.lpush(storage_value);
-                Ok(RESP::SimpleString(String::from("OK")))
+                Ok(RESP::Integer(l.len() as i64))
             }
             None => {
                 let mut l = List::new();
                 l.lpush(storage_value);
+                let new_len = l.len();
                 self.store.insert(key.to_string(), StorageValue::List(l));
-                Ok(RESP::SimpleString(String::from("OK")))
+                Ok(RESP::Integer(new_len as i64))
             }
             Some(_) => Err(StorageError::WrongType),
         }
@@ -264,9 +265,12 @@ impl Storage {
         match self.store.get_mut(key) {
             Some(StorageValue::List(l)) => {
                 let value = l.lpop();
+                if l.len() == 0 {
+                    self.store.remove(key);
+                }
                 Ok(value.into())
             }
-            None => Err(StorageError::KeyNotFound(key.to_string())),
+            None => Ok(RESP::Null),
             Some(_) => Err(StorageError::WrongType),
         }
     }
@@ -284,13 +288,14 @@ impl Storage {
         match self.store.get_mut(key) {
             Some(StorageValue::List(l)) => {
                 l.rpush(storage_value);
-                Ok(RESP::SimpleString(String::from("OK")))
+                Ok(RESP::Integer(l.len() as i64))
             }
             None => {
                 let mut l = List::new();
                 l.rpush(storage_value);
+                let new_len = l.len();
                 self.store.insert(key.to_string(), StorageValue::List(l));
-                Ok(RESP::SimpleString(String::from("OK")))
+                Ok(RESP::Integer(new_len as i64))
             }
             Some(_) => Err(StorageError::WrongType),
         }
@@ -307,9 +312,12 @@ impl Storage {
         match self.store.get_mut(key) {
             Some(StorageValue::List(l)) => {
                 let value = l.rpop();
+                if l.len() == 0 {
+                    self.store.remove(key);
+                }
                 Ok(value.into())
             }
-            None => Err(StorageError::KeyNotFound(key.to_string())),
+            None => Ok(RESP::Null),
             Some(_) => Err(StorageError::WrongType),
         }
     }
@@ -407,5 +415,14 @@ mod tests {
         ];
         let output = storage.process_command(&command).unwrap();
         assert_eq!(output, RESP::SimpleString(String::from("OK")));
+    }
+
+    #[test]
+    fn test_process_command_lpop_empty() {
+        let mut storage: Storage = Storage::new();
+
+        let command = vec![String::from("lpop"), String::from("akey1")];
+        let output = storage.process_command(&command).unwrap();
+        assert_eq!(output, RESP::Null);
     }
 }
