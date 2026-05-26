@@ -20,12 +20,12 @@ pub struct ArrayDeque<T> {
 
 macro_rules! wrapping_add {
     ($value:expr, $diff:expr) => {
-        $value = ($value + $diff) % PAGE_SIZE
+        ($value + $diff) % PAGE_SIZE
     };
 }
 macro_rules! wrapping_dec {
     ($value:expr, $diff:expr) => {
-        $value = (PAGE_SIZE + $value - $diff) % PAGE_SIZE
+        (PAGE_SIZE + $value - $diff) % PAGE_SIZE
     };
 }
 
@@ -50,21 +50,37 @@ impl<T> Deque<T> for ArrayDeque<T> {
     fn rpush(&mut self, val: T) {
         assert!(!self.is_full());
         let old = self.values[self.r].replace(val);
-        wrapping_add!(self.r, 1);
+        self.r = wrapping_add!(self.r, 1);
         assert!(old.is_none());
     }
 
     fn rpop(&mut self) -> Option<T> {
         assert!(!self.is_empty());
-        wrapping_dec!(self.r, 1);
+        self.r = wrapping_dec!(self.r, 1);
         let output = self.values[self.r].take();
         assert!(output.is_some());
         output
     }
 
+    fn rpeek(&self) -> Option<&T> {
+        if self.is_empty() {
+            None
+        } else {
+            self.values[wrapping_dec!(self.r, 1)].as_ref()
+        }
+    }
+
+    fn rpeek_mut(&mut self) -> Option<&mut T> {
+        if self.is_empty() {
+            None
+        } else {
+            self.values[wrapping_dec!(self.r, 1)].as_mut()
+        }
+    }
+
     fn lpush(&mut self, val: T) {
         assert!(!self.is_full());
-        wrapping_dec!(self.l, 1);
+        self.l = wrapping_dec!(self.l, 1);
         let old = self.values[self.l].replace(val);
         assert!(old.is_none());
     }
@@ -72,8 +88,24 @@ impl<T> Deque<T> for ArrayDeque<T> {
     fn lpop(&mut self) -> Option<T> {
         assert!(!self.is_empty());
         let output = self.values[self.l].take();
-        wrapping_add!(self.l, 1);
+        self.l = wrapping_add!(self.l, 1);
         assert!(output.is_some());
         output
+    }
+
+    fn lpeek(&self) -> Option<&T> {
+        if self.is_empty() {
+            None
+        } else {
+            self.values[self.l].as_ref()
+        }
+    }
+
+    fn lpeek_mut(&mut self) -> Option<&mut T> {
+        if self.is_empty() {
+            None
+        } else {
+            self.values[self.l].as_mut()
+        }
     }
 }

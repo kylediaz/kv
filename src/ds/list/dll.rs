@@ -99,6 +99,22 @@ impl<T> Deque<T> for DoublyLinkedList<T> {
     fn lpop(&mut self) -> Option<T> {
         pop_impl!(self, head, tail, right, left)
     }
+
+    fn rpeek(&self) -> Option<&T> {
+        unsafe { self.tail.as_ref().map(|v| &v.value) }
+    }
+
+    fn rpeek_mut(&mut self) -> Option<&mut T> {
+        unsafe { self.tail.as_mut().map(|v| &mut v.value) }
+    }
+
+    fn lpeek(&self) -> Option<&T> {
+        unsafe { self.head.as_ref().map(|v| &v.value) }
+    }
+
+    fn lpeek_mut(&mut self) -> Option<&mut T> {
+        unsafe { self.head.as_mut().map(|v| &mut v.value) }
+    }
 }
 
 impl<T> Debug for DoublyLinkedList<T> {

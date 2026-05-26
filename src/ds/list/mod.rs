@@ -13,9 +13,14 @@ pub trait Deque<T> {
     fn rpush(&mut self, val: T);
     fn lpop(&mut self) -> Option<T>;
     fn rpop(&mut self) -> Option<T>;
+
+    fn lpeek(&self) -> Option<&T>;
+    fn lpeek_mut(&mut self) -> Option<&mut T>;
+    fn rpeek(&self) -> Option<&T>;
+    fn rpeek_mut(&mut self) -> Option<&mut T>;
 }
 
-pub use self::dll::DoublyLinkedList as List;
+pub use self::quicklist::Quicklist as List;
 
 #[cfg(test)]
 mod test {
@@ -26,6 +31,15 @@ mod test {
         let list: List<i32> = List::new();
         assert!(list.len() == 0);
         assert!(list.is_empty());
+    }
+
+    #[test]
+    fn test_peek_empty() {
+        let mut list: List<i32> = List::new();
+        assert!(list.lpeek().is_none());
+        assert!(list.rpeek().is_none());
+        assert!(list.lpeek_mut().is_none());
+        assert!(list.rpeek_mut().is_none());
     }
 
     #[test]
@@ -46,10 +60,14 @@ mod test {
     fn test_lop() {
         let mut list: List<i32> = List::new();
         list.lpush(1);
+        assert_eq!(list.lpeek(), Some(&1));
         assert_eq!(list.lpop().unwrap(), 1);
+        assert_eq!(list.lpeek(), None);
         assert!(list.lpop().is_none());
         list.lpush(11);
+        assert_eq!(list.lpeek(), Some(&11));
         list.lpush(111);
+        assert_eq!(list.lpeek(), Some(&111));
         assert_eq!(list.lpop().unwrap(), 111);
         assert_eq!(list.lpop().unwrap(), 11);
         assert!(list.lpop().is_none())
@@ -59,9 +77,16 @@ mod test {
     fn test_rop() {
         let mut list: List<i32> = List::new();
         list.rpush(1);
+        assert_eq!(list.rpeek(), Some(&1));
         assert_eq!(list.rpop().unwrap(), 1);
-        list.rpush(101);
-        assert_eq!(list.rpop().unwrap(), 101);
+        assert_eq!(list.rpeek(), None);
+        assert!(list.rpop().is_none());
+        list.rpush(11);
+        assert_eq!(list.rpeek(), Some(&11));
+        list.rpush(111);
+        assert_eq!(list.rpeek(), Some(&111));
+        assert_eq!(list.rpop().unwrap(), 111);
+        assert_eq!(list.rpop().unwrap(), 11);
         assert!(list.rpop().is_none())
     }
 
@@ -73,7 +98,6 @@ mod test {
         }
         for n in (1..=100).rev() {
             let v = list.lpop();
-            println!("{:?} {}", v, n);
             assert_eq!(v.unwrap(), n);
         }
     }
@@ -86,7 +110,6 @@ mod test {
         }
         for n in (1..=100).rev() {
             let v = list.rpop();
-            println!("{:?} {}", v, n);
             assert_eq!(v.unwrap(), n);
         }
     }
@@ -109,7 +132,6 @@ mod test {
             } else {
                 v = list.lpop();
             }
-            println!("{:?} {}", v, n);
             assert_eq!(v.unwrap(), n);
         }
     }
@@ -135,7 +157,6 @@ mod test {
             } else {
                 v = list.lpop();
             }
-            println!("{:?} {}", v, n);
             assert_eq!(v.unwrap(), n);
         }
     }

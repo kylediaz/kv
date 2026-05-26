@@ -1,9 +1,8 @@
-use std::cell::RefCell;
 use std::fmt::Debug;
-use std::rc::Rc;
 
 use crate::ds::list::Deque;
 use crate::ds::list::array::ArrayDeque;
+use crate::ds::list::dll::DoublyLinkedList;
 
 /// quicklist -- fast dequeue data structure implementation
 ///
@@ -12,112 +11,17 @@ use crate::ds::list::array::ArrayDeque;
 /// I thought of this approach all on my own but then I googled
 /// it, it turns out Redis already uses it. Such is life.
 
-struct Node<T> {
-    prev: Option<Link<T>>,
-    next: Option<Link<T>>,
-    deque: ArrayDeque<T>,
-}
-
-impl<T> Node<T> {
-    fn new() -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Node {
-            prev: None,
-            next: None,
-            deque: ArrayDeque::empty(),
-        }))
-    }
-}
-
-type Link<T> = Rc<RefCell<Node<T>>>;
-
-/// Invariants:
-/// - For each node:
-///     - Is non empty (l < r). If it is empty, it should be removed from the list.
-/// - Same invariants as any linked list. e.g.
-///     - head.is_none() iff tail.is_none()
-///     - head.prev = None, tail.next = None
-///     - etc
 pub struct Quicklist<T> {
-    head: Option<Link<T>>,
-    tail: Option<Link<T>>,
+    inner: DoublyLinkedList<ArrayDeque<T>>,
     len: usize,
 }
-
-// Safety: No method leaks internal Rc/Refcell references, therefore
-//   there can't be cross-thread aliasing of those Rcs.
-unsafe impl<T> Send for Quicklist<T> where T: Send {}
 
 impl<T> Quicklist<T> {
     pub fn new() -> Self {
         Self {
-            head: None,
-            tail: None,
+            inner: DoublyLinkedList::new(),
             len: 0,
         }
-    }
-
-    fn node_rpush(&mut self) -> Link<T> {
-        let new_node = Node::new();
-        assert_eq!(self.tail.is_none(), self.head.is_none());
-        match self.tail.replace(new_node.clone()) {
-            Some(old_tail) => {
-                old_tail.borrow_mut().next = Some(new_node.clone());
-                new_node.borrow_mut().prev = Some(old_tail);
-            }
-            None => {
-                self.head = Some(new_node.clone());
-            }
-        }
-        new_node
-    }
-
-    fn node_rpop(&mut self) -> Option<Node<T>> {
-        let old_tail_rc = self.tail.take()?;
-        if Rc::ptr_eq(self.head.as_ref().unwrap(), &old_tail_rc) {
-            self.head = None;
-            self.tail = None;
-        } else {
-            let new_tail = old_tail_rc.borrow_mut().prev.take().unwrap();
-            new_tail.borrow_mut().next = None;
-            self.tail = Some(new_tail);
-        };
-        let old_tail_node = match Rc::try_unwrap(old_tail_rc) {
-            Ok(cell) => cell.into_inner(),
-            Err(_) => panic!("Unreachable"),
-        };
-        Some(old_tail_node)
-    }
-
-    fn node_lpush(&mut self) -> Link<T> {
-        let new_node = Node::new();
-        assert_eq!(self.tail.is_none(), self.head.is_none());
-        match self.head.replace(new_node.clone()) {
-            Some(old_head) => {
-                old_head.borrow_mut().prev = Some(new_node.clone());
-                new_node.borrow_mut().next = Some(old_head);
-            }
-            None => {
-                self.tail = Some(new_node.clone());
-            }
-        }
-        new_node
-    }
-
-    fn node_lpop(&mut self) -> Option<Node<T>> {
-        let old_head_rc = self.head.take()?;
-        if Rc::ptr_eq(self.tail.as_ref().unwrap(), &old_head_rc) {
-            self.head = None;
-            self.tail = None;
-        } else {
-            let new_head = old_head_rc.borrow_mut().next.take().unwrap();
-            new_head.borrow_mut().prev = None;
-            self.head = Some(new_head);
-        };
-        let node = match Rc::try_unwrap(old_head_rc) {
-            Ok(cell) => cell.into_inner(),
-            Err(_) => panic!("Unreachable"),
-        };
-        Some(node)
     }
 }
 
@@ -127,53 +31,69 @@ impl<T> Deque<T> for Quicklist<T> {
     }
 
     fn rpush(&mut self, val: T) {
-        let tail = match self.tail.clone() {
-            Some(tail) => tail,
-            None => self.node_rpush(),
-        };
-        if tail.borrow_mut().deque.is_full() {
-            let new_node_link = self.node_rpush();
-            new_node_link.borrow_mut().deque.rpush(val);
-        } else {
-            tail.borrow_mut().deque.rpush(val);
+        let tail = match self.inner.rpeek_mut() {
+            Some(node) if !node.is_full() => node,
+            _ => {
+                let new_node = ArrayDeque::empty();
+                self.inner.rpush(new_node);
+                self.inner.rpeek_mut().unwrap()
+            }
         };
         self.len += 1;
+        tail.rpush(val)
     }
 
     fn rpop(&mut self) -> Option<T> {
-        let mut tail = self.tail.as_mut()?.borrow_mut();
-        let output = tail.deque.rpop();
-        if tail.deque.is_empty() {
-            drop(tail);
-            self.node_rpop();
-        };
+        let tail = self.inner.rpeek_mut()?;
+        let output = tail.rpop();
+        if tail.is_empty() {
+            self.inner.rpop();
+        }
         self.len -= 1;
         output
+    }
+
+    fn rpeek(&self) -> Option<&T> {
+        let tail = self.inner.rpeek()?;
+        tail.rpeek()
+    }
+
+    fn rpeek_mut(&mut self) -> Option<&mut T> {
+        let tail = self.inner.rpeek_mut()?;
+        tail.rpeek_mut()
     }
 
     fn lpush(&mut self, val: T) {
-        let head = match self.head.clone() {
-            Some(head) => head,
-            None => self.node_rpush(),
-        };
-        if head.borrow_mut().deque.is_full() {
-            let new_node_link = self.node_lpush();
-            new_node_link.borrow_mut().deque.lpush(val);
-        } else {
-            head.borrow_mut().deque.lpush(val);
+        let head = match self.inner.lpeek_mut() {
+            Some(node) if !node.is_full() => node,
+            _ => {
+                let new_node = ArrayDeque::empty();
+                self.inner.lpush(new_node);
+                self.inner.lpeek_mut().unwrap()
+            }
         };
         self.len += 1;
+        head.lpush(val)
     }
 
     fn lpop(&mut self) -> Option<T> {
-        let mut head = self.head.as_mut()?.borrow_mut();
-        let output = head.deque.lpop();
-        if head.deque.is_empty() {
-            drop(head);
-            self.node_lpop();
-        };
+        let head = self.inner.lpeek_mut()?;
+        let output = head.lpop();
+        if head.is_empty() {
+            self.inner.lpop();
+        }
         self.len -= 1;
         output
+    }
+
+    fn lpeek(&self) -> Option<&T> {
+        let head = self.inner.lpeek()?;
+        head.lpeek()
+    }
+
+    fn lpeek_mut(&mut self) -> Option<&mut T> {
+        let head = self.inner.lpeek_mut()?;
+        head.lpeek_mut()
     }
 }
 
