@@ -5,7 +5,7 @@ In-memory key-value store that's a drop-in replacement for Redis.
 ## Usage
 
 ```
-flox activate # optional, installs redis-cli, python, etc
+devenv shell # optional, installs redis-cli, python, etc
 cargo run     # runs server
 redis-cli     # connect to REPL
 ```
