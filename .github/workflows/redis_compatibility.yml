@@ -14,13 +14,17 @@ jobs:
       - name: "Install Nix"
         uses: "cachix/install-nix-action@v31"
 
+      - name: "Configure Devenv Cache"
+        uses: "cachix/cachix-action@v16"
+        with:
+          name: devenv
+
       - name: "Install Devenv"
-        uses: "cachix/devenv@v1"
+        run: nix profile add nixpkgs#devenv
 
       - name: "Check Redis Compatibility"
+        shell: devenv shell bash -- -e {0}
         run: |
-          devenv shell bash -lc '
-            redis-server --save "" --appendonly no --daemonize yes
-            for i in {1..10}; do redis-cli ping && break; sleep 1; done
-            pytest test/e2e/*
-          '
+          redis-server --save "" --appendonly no --daemonize yes
+          for i in {1..10}; do redis-cli ping && break; sleep 1; done
+          pytest test/e2e/*

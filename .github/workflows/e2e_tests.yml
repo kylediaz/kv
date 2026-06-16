@@ -14,8 +14,13 @@ jobs:
       - name: "Install Nix"
         uses: "cachix/install-nix-action@v31"
 
+      - name: "Configure Devenv Cache"
+        uses: "cachix/cachix-action@v16"
+        with:
+          name: devenv
+
       - name: "Install Devenv"
-        uses: "cachix/devenv@v1"
+        run: nix profile add nixpkgs#devenv
 
       - name: Build
         run: cargo build
