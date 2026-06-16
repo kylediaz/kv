@@ -11,13 +11,16 @@ jobs:
       - name: "Checkout"
         uses: "actions/checkout@v4"
 
-      - name: "Install Flox"
-        uses: "flox/install-flox-action@v2"
+      - name: "Install Nix"
+        uses: "cachix/install-nix-action@v31"
 
-      - name: "Check Redis Compatiblity"
-        uses: "flox/activate-action@v1"
-        with:
-          command: |
+      - name: "Install Devenv"
+        uses: "cachix/devenv@v1"
+
+      - name: "Check Redis Compatibility"
+        run: |
+          devenv shell bash -lc '
             redis-server --save "" --appendonly no --daemonize yes
             for i in {1..10}; do redis-cli ping && break; sleep 1; done
             pytest test/e2e/*
+          '
